@@ -134,17 +134,28 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;height:1px;backgroun
 .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
 .notif-dot.read{background:var(--text3)}
 
+/* ── MY ESCALA HERO (técnico) ── */
+.my-escala-hero{background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(14,165,233,.06));border:1px solid rgba(0,212,170,.25);border-radius:14px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden}
+.my-escala-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(0,212,170,.15),transparent 70%);border-radius:50%}
+.hero-countdown{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--accent);line-height:1}
+.hero-label{font-size:12px;color:var(--text3);margin-top:4px}
+.hero-date{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--text);margin-top:8px}
+
 /* ── CALENDAR ── */
 .cal-controls{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .cal-month{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);min-width:150px;text-align:center}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-day-hdr{text-align:center;font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--text3);padding:4px 2px;text-transform:uppercase}
 .cal-day{border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);transition:all .15s;padding:2px;height:50px}
-.cal-day.saturday{border-color:rgba(0,212,170,.3);background:rgba(0,212,170,.04);cursor:pointer}
-.cal-day.saturday:hover{border-color:var(--accent);transform:scale(1.04)}
-.cal-day.sat-folga{border-color:rgba(139,148,158,.3);background:rgba(139,148,158,.05);cursor:pointer}
-.cal-day.sat-feriado{border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.05);cursor:pointer}
-.cal-day.sat-todos{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.05);cursor:pointer}
+.cal-day.saturday{border-color:rgba(0,212,170,.3);background:rgba(0,212,170,.04)}
+.cal-day.saturday.clickable{cursor:pointer}
+.cal-day.saturday.clickable:hover{border-color:var(--accent);transform:scale(1.04)}
+.cal-day.sat-folga{border-color:rgba(139,148,158,.3);background:rgba(139,148,158,.05)}
+.cal-day.sat-folga.clickable{cursor:pointer}
+.cal-day.sat-feriado{border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.05)}
+.cal-day.sat-feriado.clickable{cursor:pointer}
+.cal-day.sat-todos{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.05)}
+.cal-day.sat-todos.clickable{cursor:pointer}
 .cal-day.empty{background:transparent;border-color:transparent}
 .cal-day.other-month{opacity:.22}
 .cal-num{font-size:11px;font-weight:600;color:var(--text2);line-height:1}
@@ -214,6 +225,9 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .toast.success{border-left:3px solid var(--success)}
 .toast.error{border-left:3px solid var(--danger)}
 .toast.info{border-left:3px solid var(--accent2)}
+
+/* ── LOCK BADGE (gestor-only indicator) ── */
+.gestor-only-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:var(--gestor);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);padding:1px 6px;border-radius:8px;letter-spacing:.3px;text-transform:uppercase}
 
 /* ── PAGE ── */
 .page{display:none}.page.active{display:block}
@@ -322,52 +336,15 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 </header>
 
 <div class="app">
-<!-- SIDEBAR -->
+<!-- SIDEBAR (rendered dynamically after login) -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-tag">NSI · UNA</div>
     <div class="logo-title">Escalas</div>
     <div class="logo-sub">Sistema de Plantões</div>
   </div>
-  <nav class="nav">
-    <div class="nav-item active" onclick="navigate('dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      <span>Dashboard</span>
-    </div>
-    <div class="nav-item" onclick="navigate('calendar')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span>Calendário</span>
-    </div>
-    <div class="nav-item" onclick="navigate('escalas')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-      <span>Escalas</span>
-    </div>
-    <div class="nav-item" onclick="navigate('trocas')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-      <span>Trocas</span>
-      <span class="nav-badge" id="nav-badge-trocas" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="navigate('notificacoes')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span>Notificações</span>
-      <span class="nav-badge" id="nav-badge-notif" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="navigate('tecnicos')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>Técnicos</span>
-    </div>
-    <div class="nav-item" id="nav-auditoria" onclick="navigate('auditoria')" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      <span>Auditoria</span>
-    </div>
-    <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="17" y1="14" x2="23" y2="14"/></svg>
-      <span>Usuários</span>
-    </div>
-    <div class="nav-item" onclick="navigate('relatorios')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      <span>Relatórios</span>
-    </div>
+  <nav class="nav" id="sidebar-nav">
+    <!-- populated by buildNav() -->
   </nav>
   <div class="sidebar-user" id="sidebar-user-info">
     <div class="sidebar-user-avatar" id="sidebar-avatar"></div>
@@ -375,27 +352,31 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       <div class="sidebar-user-name" id="sidebar-uname">—</div>
       <div class="sidebar-user-role" id="sidebar-urole">—</div>
     </div>
-    <button onclick="logout()" title="Sair" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Sair">
+    <button onclick="logout()" title="Sair" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
   <div class="sidebar-footer">
     <div style="font-size:12px;color:var(--text2);font-weight:600;font-family:'DM Mono',monospace" id="live-clock"></div>
     <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace" id="live-date"></div>
-    <div style="font-size:10px;color:var(--text3);margin-top:3px">v3.0 · NSI UNA</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:3px">v3.1 · NSI UNA</div>
   </div>
 </aside>
 
 <!-- MAIN -->
 <main class="main">
 
-<!-- DASHBOARD -->
-<div class="page active" id="page-dashboard">
+<!-- ════════════════════════════════
+     PAGES — GESTOR
+════════════════════════════════ -->
+
+<!-- DASHBOARD (gestor) -->
+<div class="page" id="page-dashboard">
   <div class="page-header">
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date-sub"></div></div>
-    <div class="header-actions">
-      <button class="btn btn-secondary" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel</button>
-      <button class="btn btn-secondary" onclick="exportTXT()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>TXT</button>
+    <div class="header-actions" id="dash-actions">
+      <button class="btn btn-secondary" onclick="requireGestor() && exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel</button>
+      <button class="btn btn-secondary" onclick="requireGestor() && exportTXT()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>TXT</button>
     </div>
   </div>
   <div id="dash-alerts" style="margin-bottom:14px"></div>
@@ -406,15 +387,22 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- MINHA ESCALA (técnico) -->
+<div class="page" id="page-minha-escala">
+  <div class="page-header">
+    <div><div class="page-title">Minha Escala</div><div class="page-sub" id="minha-escala-sub">Seus próximos plantões</div></div>
+  </div>
+  <div id="minha-escala-content"></div>
+</div>
+
 <!-- CALENDAR -->
 <div class="page" id="page-calendar">
   <div class="page-header">
-    <div><div class="page-title">Calendário</div><div class="page-sub">Clique em qualquer sábado para configurar</div></div>
-    <div class="header-actions">
-      <button class="btn btn-primary" onclick="openRodizioModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Rodízio
-      </button>
+    <div>
+      <div class="page-title">Calendário</div>
+      <div class="page-sub" id="cal-page-sub">Visualização dos sábados</div>
     </div>
+    <div class="header-actions" id="cal-header-actions"></div>
   </div>
   <div id="cal-rodizio-status" style="margin-bottom:12px"></div>
   <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start" class="cal-layout">
@@ -436,11 +424,11 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- ESCALAS -->
+<!-- ESCALAS (gestor) -->
 <div class="page" id="page-escalas">
   <div class="page-header">
-    <div><div class="page-title">Escalas</div><div class="page-sub">Plantões cadastrados</div></div>
-    <button class="btn btn-primary" onclick="openAddEscala()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova Escala</button>
+    <div><div class="page-title">Escalas</div><div class="page-sub">Plantões cadastrados <span class="gestor-only-tag">👑 Gestor</span></div></div>
+    <button class="btn btn-primary" onclick="requireGestor() && openAddEscala()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova Escala</button>
   </div>
   <div class="card"><div class="table-wrap"><table>
     <thead><tr><th>Data</th><th>Tipo</th><th>Técnico</th><th>Status</th><th>Ações</th></tr></thead>
@@ -451,8 +439,8 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 <!-- TROCAS -->
 <div class="page" id="page-trocas">
   <div class="page-header">
-    <div><div class="page-title">Trocas</div><div class="page-sub">Solicitações de troca de plantão</div></div>
-    <button class="btn btn-primary" onclick="openAddTroca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Solicitar Troca</button>
+    <div><div class="page-title">Trocas</div><div class="page-sub" id="trocas-page-sub">Solicitações de troca de plantão</div></div>
+    <button class="btn btn-primary" id="btn-solicitar-troca" onclick="openAddTroca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Solicitar Troca</button>
   </div>
   <div id="trocas-list"></div>
 </div>
@@ -465,22 +453,22 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   <div id="notif-list"></div>
 </div>
 
-<!-- TÉCNICOS -->
+<!-- TÉCNICOS (gestor full, técnico read-only) -->
 <div class="page" id="page-tecnicos">
   <div class="page-header">
-    <div><div class="page-title">Técnicos</div><div class="page-sub">Equipe e ordem do rodízio</div></div>
-    <button class="btn btn-primary" onclick="openAddTecnico()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Técnico</button>
+    <div><div class="page-title">Técnicos</div><div class="page-sub" id="tecnicos-page-sub">Equipe e ordem do rodízio</div></div>
+    <button class="btn btn-primary" id="btn-novo-tecnico" onclick="requireGestor() && openAddTecnico()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Técnico</button>
   </div>
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-header"><div class="card-title">Ordem do Rodízio</div><button class="btn btn-secondary btn-sm" onclick="openRodizioModal()">Configurar</button></div>
+  <div class="card" style="margin-bottom:14px" id="rodizio-card">
+    <div class="card-header"><div class="card-title">Ordem do Rodízio</div><button class="btn btn-secondary btn-sm" id="btn-config-rodizio" onclick="requireGestor() && openRodizioModal()" style="display:none">Configurar</button></div>
     <div id="rodizio-queue-preview"></div>
   </div>
   <div class="card"><div class="tech-list" id="tech-list" style="display:flex;flex-direction:column;gap:8px"></div></div>
 </div>
 
-<!-- AUDITORIA (gestor) -->
+<!-- AUDITORIA (gestor only) -->
 <div class="page" id="page-auditoria">
-  <div class="page-header"><div><div class="page-title">Auditoria</div><div class="page-sub">Histórico completo de alterações</div></div>
+  <div class="page-header"><div><div class="page-title">Auditoria</div><div class="page-sub">Histórico completo <span class="gestor-only-tag">👑 Gestor</span></div></div>
     <div class="header-actions">
       <select class="form-input btn-sm" id="audit-filter" onchange="renderAuditoria()" style="width:160px;padding:7px 11px">
         <option value="">Todas as ações</option>
@@ -494,10 +482,10 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   <div id="audit-list"></div>
 </div>
 
-<!-- USUÁRIOS (gestor) -->
+<!-- USUÁRIOS (gestor only) -->
 <div class="page" id="page-usuarios">
-  <div class="page-header"><div><div class="page-title">Usuários</div><div class="page-sub">Gerenciar acessos ao sistema</div></div>
-    <button class="btn btn-primary" onclick="openAddUsuario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Usuário</button>
+  <div class="page-header"><div><div class="page-title">Usuários</div><div class="page-sub">Gerenciar acessos <span class="gestor-only-tag">👑 Gestor</span></div></div>
+    <button class="btn btn-primary" onclick="requireGestor() && openAddUsuario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Usuário</button>
   </div>
   <div class="card"><div class="table-wrap"><table>
     <thead><tr><th>Nome</th><th>Perfil</th><th>Técnico Vinculado</th><th>Ações</th></tr></thead>
@@ -505,10 +493,10 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </table></div></div>
 </div>
 
-<!-- RELATÓRIOS -->
+<!-- RELATÓRIOS (gestor only) -->
 <div class="page" id="page-relatorios">
   <div class="page-header">
-    <div><div class="page-title">Relatórios</div><div class="page-sub">Análise de distribuição</div></div>
+    <div><div class="page-title">Relatórios</div><div class="page-sub">Análise de distribuição <span class="gestor-only-tag">👑 Gestor</span></div></div>
     <div style="display:flex;gap:7px">
       <select class="form-input" id="rel-year" onchange="renderRelatorios()" style="width:95px"></select>
       <select class="form-input" id="rel-month" onchange="renderRelatorios()" style="width:135px">
@@ -536,7 +524,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 
 <!-- MODALS -->
 
-<!-- MODAL ASSIGN -->
+<!-- MODAL ASSIGN (gestor only) -->
 <div class="modal-overlay" id="modal-assign" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-assign-title">Configurar Sábado</div>
@@ -568,7 +556,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- MODAL ESCALA -->
+<!-- MODAL ESCALA (gestor only) -->
 <div class="modal-overlay" id="modal-escala" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-escala-title">Nova Escala</div>
@@ -591,7 +579,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- MODAL TÉCNICO -->
+<!-- MODAL TÉCNICO (gestor only) -->
 <div class="modal-overlay" id="modal-tecnico" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-tech-title">Novo Técnico</div>
@@ -629,7 +617,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- MODAL RESPOSTA TROCA (aprovar/recusar) -->
+<!-- MODAL RESPOSTA TROCA -->
 <div class="modal-overlay" id="modal-resposta-troca" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-resp-title">Responder Solicitação de Troca</div>
@@ -643,7 +631,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- MODAL RODÍZIO -->
+<!-- MODAL RODÍZIO (gestor only) -->
 <div class="modal-overlay" id="modal-rodizio" style="display:none">
   <div class="modal" style="max-width:560px">
     <div class="modal-title">⚙️ Rodízio Automático</div>
@@ -666,7 +654,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- MODAL USUÁRIO -->
+<!-- MODAL USUÁRIO (gestor only) -->
 <div class="modal-overlay" id="modal-usuario" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-user-title">Novo Usuário</div>
@@ -680,7 +668,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       </select>
     </div>
     <div class="form-group" id="usuario-tech-group">
-      <label class="form-label">Técnico Vinculado (para notificações)</label>
+      <label class="form-label">Técnico Vinculado (para notificações e escalas)</label>
       <select class="form-input" id="usuario-tech-input"><option value="">Nenhum</option></select>
     </div>
     <div class="modal-actions">
@@ -692,13 +680,8 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 
 <div class="toast" id="toast"></div>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav"><div class="bottom-nav-inner">
-  <button class="bottom-nav-item active" onclick="navigate('dashboard')" id="bnav-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Início</button>
-  <button class="bottom-nav-item" onclick="navigate('calendar')" id="bnav-calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendário</button>
-  <button class="bottom-nav-item" onclick="navigate('trocas')" id="bnav-trocas" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><span class="bnav-badge" id="bnav-badge-trocas" style="display:none"></span>Trocas</button>
-  <button class="bottom-nav-item" onclick="navigate('notificacoes')" id="bnav-notificacoes" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="bnav-badge" id="bnav-badge-notif" style="display:none"></span>Alertas</button>
-  <button class="bottom-nav-item" onclick="navigate('tecnicos')" id="bnav-tecnicos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Equipe</button>
+<!-- BOTTOM NAV (populated dynamically) -->
+<nav class="bottom-nav"><div class="bottom-nav-inner" id="bottom-nav-inner">
 </div></nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -715,12 +698,43 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ═══════════════════════════════════════════════
 let state = { tecnicos:[], escalas:[], trocas:[], usuarios:[], notificacoes:[], auditLog:[] };
 let currentUser   = null;  // logged-in user object
-let editingTechId = null, editingEscalaId = null, editingUserId = null;
+let editingTechId = null, editingEscalaId = null, editingUserId2 = null;
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let assigningDate = null, assignTipoSel = 'normal', escTipoSel = 'normal';
 let respondingTrocaId = null;
 let chartDash = null, chartBar = null, chartPie = null;
 let loginSelectedUser = null, pinBuffer = '';
+
+// ═══════════════════════════════════════════════
+// ██████████ PERMISSION SYSTEM ██████████
+// Centralised permission checks — NEVER bypass
+// ═══════════════════════════════════════════════
+function isGestor() {
+  return currentUser && currentUser.perfil === 'gestor';
+}
+
+function requireGestor() {
+  if (!isGestor()) {
+    showToast('⛔ Acesso restrito ao Gestor', 'error');
+    return false;
+  }
+  return true;
+}
+
+// Pages each role can access
+const GESTOR_PAGES  = ['dashboard','calendar','escalas','trocas','notificacoes','tecnicos','auditoria','usuarios','relatorios'];
+const TECNICO_PAGES = ['minha-escala','calendar','trocas','notificacoes','tecnicos'];
+
+function canAccess(page) {
+  if (!currentUser) return false;
+  if (isGestor()) return GESTOR_PAGES.includes(page);
+  return TECNICO_PAGES.includes(page);
+}
+
+// Default landing page per role
+function defaultPage() {
+  return isGestor() ? 'dashboard' : 'minha-escala';
+}
 
 // ═══════════════════════════════════════════════
 // UTILS
@@ -754,20 +768,50 @@ function showToast(msg, type='success') {
 async function dbLoad() {
   setLoading(true);
   try {
-    const [t, e, tr, u, n, a] = await Promise.all([
+    const [t, e, tr, n, a] = await Promise.all([
       db.from('tecnicos').select('*').eq('active',true).order('ordem_rodizio').order('name'),
       db.from('escalas').select('*').order('date'),
       db.from('trocas').select('*').order('created_at',{ascending:false}),
-      db.from('usuarios').select('*').eq('active',true).order('name'),
       db.from('notificacoes').select('*').order('created_at',{ascending:false}).limit(60),
       db.from('audit_log').select('*').order('created_at',{ascending:false}).limit(100)
     ]);
+
+    // Load users differently based on role:
+    // gestor: all users | tecnico: only self (privacy)
+    let uData = [];
+    if (currentUser) {
+      if (isGestor()) {
+        const uRes = await db.from('usuarios').select('*').eq('active',true).order('name');
+        uData = uRes.data || [];
+      } else {
+        // Técnico: only loads own user record
+        const uRes = await db.from('usuarios').select('*').eq('id', currentUser.id).eq('active',true);
+        uData = uRes.data || [];
+      }
+    }
+
     state.tecnicos = (t.data||[]).map(x=>({id:x.id,name:x.name,role:x.role,color:x.color,active:x.active,ordemRodizio:x.ordem_rodizio||0}));
     state.escalas  = (e.data||[]).map(x=>({id:x.id,date:x.date,techId:x.tech_id,tipo:x.tipo||'normal',obs:x.obs||''}));
-    state.trocas   = (tr.data||[]).map(x=>({id:x.id,fromEscalaId:x.from_escala_id,toEscalaId:x.to_escala_id,solicitanteId:x.solicitante_id,aprovadorId:x.aprovador_id,motivo:x.motivo,status:x.status,respostaMotivo:x.resposta_motivo||''}));
-    state.usuarios = (u.data||[]).map(x=>({id:x.id,name:x.name,pin:x.pin,perfil:x.perfil,techId:x.tech_id,active:x.active}));
-    state.notificacoes = (n.data||[]).map(x=>({id:x.id,destinatarioId:x.destinatario_id,tipo:x.tipo,titulo:x.titulo,mensagem:x.mensagem,lida:x.lida,trocaId:x.troca_id,createdAt:x.created_at}));
-    state.auditLog = (a.data||[]).map(x=>({id:x.id,usuarioId:x.usuario_id,usuarioName:x.usuario_name,acao:x.acao,tabela:x.tabela,registroId:x.registro_id,detalhe:x.detalhe,createdAt:x.created_at}));
+
+    // Filter trocas based on role
+    const allTrocas = (tr.data||[]).map(x=>({id:x.id,fromEscalaId:x.from_escala_id,toEscalaId:x.to_escala_id,solicitanteId:x.solicitante_id,aprovadorId:x.aprovador_id,motivo:x.motivo,status:x.status,respostaMotivo:x.resposta_motivo||''}));
+    if (isGestor()) {
+      state.trocas = allTrocas;
+    } else {
+      // Técnico only sees their own trocas (where they are solicitante or aprovador)
+      state.trocas = allTrocas.filter(tr =>
+        tr.solicitanteId === currentUser.id || tr.aprovadorId === currentUser.id
+      );
+    }
+
+    state.usuarios = uData.map(x=>({id:x.id,name:x.name,pin:x.pin,perfil:x.perfil,techId:x.tech_id,active:x.active}));
+    // Each user only sees their own notifications
+    state.notificacoes = (n.data||[])
+      .filter(x => !currentUser || x.destinatario_id === currentUser.id)
+      .map(x=>({id:x.id,destinatarioId:x.destinatario_id,tipo:x.tipo,titulo:x.titulo,mensagem:x.mensagem,lida:x.lida,trocaId:x.troca_id,createdAt:x.created_at}));
+    // Audit only for gestor
+    state.auditLog = isGestor() ? (a.data||[]).map(x=>({id:x.id,usuarioId:x.usuario_id,usuarioName:x.usuario_name,acao:x.acao,tabela:x.tabela,registroId:x.registro_id,detalhe:x.detalhe,createdAt:x.created_at})) : [];
+
   } catch(err){ showToast('Erro ao carregar: '+err.message,'error'); }
   setLoading(false);
   updateBadges();
@@ -800,49 +844,100 @@ function updateBadges() {
   if (!currentUser) return;
   const myNotifs = state.notificacoes.filter(n => n.destinatarioId === currentUser.id && !n.lida);
   const pendTrocas = state.trocas.filter(t =>
-    t.status === 'pendente' && t.aprovadorId === currentUser.id
+    (t.status === 'pendente' && t.aprovadorId === currentUser.id) ||
+    (isGestor() && t.status === 'aguardando_gestor')
   );
-  const gestor = currentUser.perfil === 'gestor';
-  const gestorPend = gestor ? state.trocas.filter(t=>t.status==='aguardando_gestor').length : 0;
-  const notifCount = myNotifs.length + gestorPend;
-  const trocasCount = pendTrocas.length + (gestor ? gestorPend : 0);
+  const notifCount = myNotifs.length;
+  const trocasCount = pendTrocas.length;
 
-  const nb = document.getElementById('nav-badge-notif');
-  if (nb) { nb.textContent=notifCount; nb.style.display=notifCount>0?'inline':'none'; }
-  const tb = document.getElementById('nav-badge-trocas');
-  if (tb) { tb.textContent=trocasCount; tb.style.display=trocasCount>0?'inline':'none'; }
-  const bnt = document.getElementById('bnav-badge-trocas');
-  if (bnt) { bnt.textContent=trocasCount; bnt.style.display=trocasCount>0?'inline':'none'; }
-  const bnn = document.getElementById('bnav-badge-notif');
-  if (bnn) { bnn.textContent=notifCount; bnn.style.display=notifCount>0?'inline':'none'; }
-  const mn = document.getElementById('mob-notif-count');
-  if (mn) { mn.textContent=notifCount; mn.style.display=notifCount>0?'inline':'none'; }
+  ['nav-badge-notif','bnav-badge-notif','mob-notif-count'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=notifCount;el.style.display=notifCount>0?'inline':'none';}
+  });
+  ['nav-badge-trocas','bnav-badge-trocas'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=trocasCount;el.style.display=trocasCount>0?'inline':'none';}
+  });
+}
+
+// ═══════════════════════════════════════════════
+// NAV BUILDER — dynamic per role
+// ═══════════════════════════════════════════════
+function buildNav() {
+  if (!currentUser) return;
+  const gestorNav = [
+    {page:'dashboard',icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',label:'Dashboard'},
+    {page:'calendar',icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',label:'Calendário'},
+    {page:'escalas',icon:'<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>',label:'Escalas'},
+    {page:'trocas',icon:'<path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>',label:'Trocas',badge:'nav-badge-trocas'},
+    {page:'notificacoes',icon:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',label:'Notificações',badge:'nav-badge-notif'},
+    {page:'tecnicos',icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',label:'Técnicos'},
+    {page:'auditoria',icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',label:'Auditoria'},
+    {page:'usuarios',icon:'<circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="17" y1="14" x2="23" y2="14"/>',label:'Usuários'},
+    {page:'relatorios',icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',label:'Relatórios'},
+  ];
+  const tecnicoNav = [
+    {page:'minha-escala',icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',label:'Minha Escala'},
+    {page:'calendar',icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',label:'Calendário'},
+    {page:'trocas',icon:'<path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>',label:'Minhas Trocas',badge:'nav-badge-trocas'},
+    {page:'notificacoes',icon:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',label:'Notificações',badge:'nav-badge-notif'},
+    {page:'tecnicos',icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',label:'Equipe'},
+  ];
+  const items = isGestor() ? gestorNav : tecnicoNav;
+
+  // Sidebar nav
+  document.getElementById('sidebar-nav').innerHTML = items.map(it=>`
+    <div class="nav-item" id="nav-${it.page}" onclick="navigate('${it.page}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${it.icon}</svg>
+      <span>${it.label}</span>
+      ${it.badge?`<span class="nav-badge" id="${it.badge}" style="display:none">0</span>`:''}
+    </div>
+  `).join('');
+
+  // Bottom nav (mobile) — max 5 items
+  const bnav = items.slice(0,5);
+  const bnavLabels = {
+    'minha-escala':'Início','dashboard':'Início','calendar':'Calendário',
+    'trocas':'Trocas','notificacoes':'Alertas','tecnicos':'Equipe','escalas':'Escalas'
+  };
+  document.getElementById('bottom-nav-inner').innerHTML = bnav.map(it=>`
+    <button class="bottom-nav-item" id="bnav-${it.page}" onclick="navigate('${it.page}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${it.icon}</svg>
+      ${it.badge?`<span class="bnav-badge" id="${it.badge}" style="display:none"></span>`:''}
+      ${bnavLabels[it.page]||it.label}
+    </button>
+  `).join('');
 }
 
 // ═══════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════
 async function showLogin() {
-  await dbLoad();
+  // Load only minimal public data for login screen (just user names/perfil, no PINs exposed in DOM)
+  setLoading(true);
+  const { data } = await db.from('usuarios').select('id,name,perfil').eq('active',true).order('name');
+  setLoading(false);
+
   const list = document.getElementById('user-select-list');
-  list.innerHTML = state.usuarios.map(u => `
-    <div class="user-option" onclick="selectLoginUser(${u.id})" id="uopt-${u.id}">
+  const users = data || [];
+  list.innerHTML = users.map(u => `
+    <div class="user-option" onclick="selectLoginUser(${u.id},'${u.perfil}')" id="uopt-${u.id}">
       <div class="user-avatar" style="background:${avatarColor(u.name)}">${avatarInitials(u.name)}</div>
       <div>
         <div style="font-size:13px;font-weight:600;color:var(--text)">${u.name}</div>
         <div style="font-size:11px;color:var(--text3)">${u.perfil==='gestor'?'👑 Gestor':'👷 Técnico'}</div>
       </div>
     </div>
-  `).join('') || '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Nenhum usuário cadastrado. Execute o schema v3 no Supabase.</div>';
+  `).join('') || '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Nenhum usuário cadastrado.</div>';
+
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-function selectLoginUser(id) {
-  loginSelectedUser = state.usuarios.find(u=>u.id===id);
-  if (!loginSelectedUser) return;
-  document.querySelectorAll('.user-option').forEach(el=>el.classList.remove('selected'));
-  document.getElementById('uopt-'+id).classList.add('selected');
-  document.getElementById('login-selected-name').textContent = loginSelectedUser.name;
+// loginSelectedUser only stores id and perfil during PIN step (no PIN exposed)
+function selectLoginUser(id, perfil) {
+  loginSelectedUser = { id, perfil };
+  const nameEl = document.querySelector(`#uopt-${id} div div:first-child`);
+  document.getElementById('login-selected-name').textContent = nameEl ? nameEl.textContent : '?';
   pinBuffer = '';
   updatePinDots();
   document.getElementById('pin-error').textContent = '';
@@ -866,30 +961,35 @@ function pinDel() { pinBuffer=pinBuffer.slice(0,-1); updatePinDots(); }
 function updatePinDots() {
   for(let i=0;i<4;i++) {
     const d=document.getElementById('pd'+i);
-    if(d) { d.classList.toggle('filled', i<pinBuffer.length); }
+    if(d) d.classList.toggle('filled', i<pinBuffer.length);
   }
 }
-function checkPin() {
+async function checkPin() {
   if (!loginSelectedUser) return;
-  if (pinBuffer === loginSelectedUser.pin) {
-    document.getElementById('login-screen').style.display = 'none';
-    currentUser = loginSelectedUser;
-    afterLogin();
-  } else {
-    document.getElementById('pin-error').textContent = 'PIN incorreto. Tente novamente.';
-    pinBuffer = '';
-    updatePinDots();
-    // shake animation
-    const dots = document.getElementById('pin-display');
-    dots.style.animation='shake .3s ease';
-    setTimeout(()=>dots.style.animation='',400);
-  }
+  // Validate PIN server-side (fetch full record only on attempt)
+  const { data } = await db.from('usuarios').select('*').eq('id', loginSelectedUser.id).eq('active', true).single();
+  if (!data) { pinFail('Usuário não encontrado'); return; }
+  if (pinBuffer !== data.pin) { pinFail('PIN incorreto. Tente novamente.'); return; }
+  // Success
+  currentUser = { id:data.id, name:data.name, pin:data.pin, perfil:data.perfil, techId:data.tech_id, active:data.active };
+  document.getElementById('login-screen').style.display = 'none';
+  pinBuffer = '';
+  afterLogin();
+}
+function pinFail(msg) {
+  document.getElementById('pin-error').textContent = msg;
+  pinBuffer = '';
+  updatePinDots();
+  const dots = document.getElementById('pin-display');
+  dots.style.animation='shake .3s ease';
+  setTimeout(()=>dots.style.animation='',400);
 }
 
 async function afterLogin() {
   await dbLoad();
+  buildNav();
   updateUserUI();
-  renderDashboard();
+  navigate(defaultPage());
 }
 
 function updateUserUI() {
@@ -900,58 +1000,178 @@ function updateUserUI() {
   if (avatar) { avatar.textContent=avatarInitials(currentUser.name); avatar.style.background=avatarColor(currentUser.name); }
   if (uname) uname.textContent = currentUser.name;
   if (urole) urole.textContent = currentUser.perfil==='gestor' ? '👑 Gestor' : '👷 Técnico';
-  // Show gestor-only nav items
-  const isGestor = currentUser.perfil === 'gestor';
-  ['nav-auditoria','nav-usuarios'].forEach(id=>{
+
+  // Show gestor-only controls on shared pages
+  ['btn-novo-tecnico','btn-config-rodizio'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.style.display = isGestor?'flex':'none';
+    if(el) el.style.display = isGestor()?'flex':'none';
   });
+
+  // Calendar header actions
+  const calActions = document.getElementById('cal-header-actions');
+  if (calActions) {
+    if (isGestor()) {
+      calActions.innerHTML = `<button class="btn btn-primary" onclick="openRodizioModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Rodízio</button>`;
+      document.getElementById('cal-page-sub').textContent = 'Clique em qualquer sábado para configurar';
+    } else {
+      calActions.innerHTML = '';
+      document.getElementById('cal-page-sub').textContent = 'Visualização dos sábados da equipe';
+    }
+  }
+
+  // Trocas page sub
+  const trocasSub = document.getElementById('trocas-page-sub');
+  if (trocasSub) trocasSub.textContent = isGestor() ? 'Todas as trocas da equipe' : 'Suas solicitações de troca';
+
+  // Técnicos page sub
+  const tecSub = document.getElementById('tecnicos-page-sub');
+  if (tecSub) tecSub.textContent = isGestor() ? 'Equipe e ordem do rodízio' : 'Equipe NSI (somente leitura)';
+
+  // Dashboard export buttons (gestor only)
+  const dashActions = document.getElementById('dash-actions');
+  if (dashActions) dashActions.style.display = isGestor() ? 'flex' : 'none';
 }
 
 function logout() {
   currentUser = null; loginSelectedUser = null; pinBuffer = '';
+  state = { tecnicos:[], escalas:[], trocas:[], usuarios:[], notificacoes:[], auditLog:[] };
+  // Clear nav
+  document.getElementById('sidebar-nav').innerHTML = '';
+  document.getElementById('bottom-nav-inner').innerHTML = '';
   showLogin();
 }
 
 // ═══════════════════════════════════════════════
-// NAVIGATE
+// NAVIGATE — permission-checked
 // ═══════════════════════════════════════════════
-const allPages = ['dashboard','calendar','escalas','trocas','notificacoes','tecnicos','auditoria','usuarios','relatorios'];
 async function navigate(page) {
   if (!currentUser) { showLogin(); return; }
-  // Gestor-only pages
-  if (['auditoria','usuarios'].includes(page) && currentUser.perfil!=='gestor') {
-    showToast('Acesso restrito ao gestor','error'); return;
+
+  // Hard permission check
+  if (!canAccess(page)) {
+    showToast('⛔ Você não tem acesso a esta área', 'error');
+    navigate(defaultPage());
+    return;
   }
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+
+  const allPages = ['dashboard','minha-escala','calendar','escalas','trocas','notificacoes','tecnicos','auditoria','usuarios','relatorios'];
+  allPages.forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    if(el) el.classList.remove('active');
+  });
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.bottom-nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  // sidebar nav match
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(ni => { if(ni.getAttribute('onclick')?.includes("'"+page+"'")) ni.classList.add('active'); });
-  const bnav = document.getElementById('bnav-'+page);
-  if (bnav) bnav.classList.add('active');
+
+  const pageEl = document.getElementById('page-'+page);
+  if (pageEl) pageEl.classList.add('active');
+
+  const navItem = document.getElementById('nav-'+page);
+  if (navItem) navItem.classList.add('active');
+  const bnavItem = document.getElementById('bnav-'+page);
+  if (bnavItem) bnavItem.classList.add('active');
+
   window.scrollTo(0,0);
   await dbLoad();
-  if(page==='dashboard')    renderDashboard();
-  if(page==='calendar')     renderCalendar();
-  if(page==='escalas')      renderEscalas();
-  if(page==='trocas')       renderTrocas();
-  if(page==='notificacoes') renderNotificacoes();
-  if(page==='tecnicos')     renderTecnicos();
-  if(page==='auditoria')    renderAuditoria();
-  if(page==='usuarios')     renderUsuarios();
-  if(page==='relatorios')   renderRelatorios();
+
+  if(page==='dashboard')     { requireGestor() && renderDashboard(); }
+  if(page==='minha-escala')  renderMinhaEscala();
+  if(page==='calendar')      renderCalendar();
+  if(page==='escalas')       { requireGestor() && renderEscalas(); }
+  if(page==='trocas')        renderTrocas();
+  if(page==='notificacoes')  renderNotificacoes();
+  if(page==='tecnicos')      renderTecnicos();
+  if(page==='auditoria')     { requireGestor() && renderAuditoria(); }
+  if(page==='usuarios')      { requireGestor() && renderUsuarios(); }
+  if(page==='relatorios')    { requireGestor() && renderRelatorios(); }
 }
 
 // ═══════════════════════════════════════════════
-// ALERTS / DASHBOARD
+// MINHA ESCALA (técnico view)
+// ═══════════════════════════════════════════════
+function renderMinhaEscala() {
+  if (!currentUser) return;
+  const myTechId = currentUser.techId;
+  const today = new Date(), todayStr = formatDate(today);
+
+  let html = '';
+
+  if (!myTechId) {
+    html = `<div class="card"><div class="alert-banner warn"><div class="alert-icon">⚠️</div><div>Sua conta não está vinculada a um técnico. Peça ao gestor para configurar.</div></div></div>`;
+    document.getElementById('minha-escala-content').innerHTML = html;
+    return;
+  }
+
+  const myTech = techById(myTechId);
+  const myEscalas = state.escalas.filter(e => e.tipo==='normal' && e.techId===myTechId).sort((a,b)=>a.date.localeCompare(b.date));
+  const upcoming = myEscalas.filter(e => e.date >= todayStr);
+  const past = myEscalas.filter(e => e.date < todayStr);
+  const nextEscala = upcoming[0];
+
+  // Hero card
+  if (nextEscala) {
+    const diffDays = Math.ceil((parseDate(nextEscala.date) - today) / 86400000);
+    const isToday = nextEscala.date === todayStr;
+    html += `<div class="my-escala-hero">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Próximo Plantão</div>
+          <div class="hero-date">${fmtBR(nextEscala.date)}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:6px">${parseDate(nextEscala.date).toLocaleDateString('pt-BR',{weekday:'long',month:'long',day:'numeric'})}</div>
+          ${nextEscala.obs?`<div style="font-size:11px;color:var(--text3);margin-top:4px">📝 ${nextEscala.obs}</div>`:''}
+        </div>
+        <div style="text-align:center">
+          <div class="hero-countdown">${isToday ? '🔴' : diffDays}</div>
+          <div class="hero-label">${isToday ? 'HOJE!' : diffDays===1 ? 'amanhã' : 'dias'}</div>
+        </div>
+      </div>
+      ${isToday?`<div style="margin-top:14px;padding:9px 13px;background:rgba(0,212,170,.1);border-radius:8px;font-size:12px;color:var(--accent);font-weight:600">✅ Você está de plantão HOJE</div>`:''}
+    </div>`;
+  } else {
+    html += `<div class="alert-banner info" style="margin-bottom:18px"><div class="alert-icon">ℹ️</div><div>Nenhum plantão futuro agendado para você ainda.</div></div>`;
+  }
+
+  // Stats row
+  html += `<div class="grid-3" style="margin-bottom:18px">
+    <div class="stat-card c1"><div class="stat-label">Total de Plantões</div><div class="stat-val">${myEscalas.length}</div><div class="stat-sub">histórico completo</div></div>
+    <div class="stat-card c2"><div class="stat-label">Próximos</div><div class="stat-val">${upcoming.length}</div><div class="stat-sub">agendados</div></div>
+    <div class="stat-card c3"><div class="stat-label">Realizados</div><div class="stat-val">${past.length}</div><div class="stat-sub">concluídos</div></div>
+  </div>`;
+
+  // Upcoming list
+  if (upcoming.length > 0) {
+    html += `<div class="card" style="margin-bottom:14px">
+      <div class="card-header"><div class="card-title">Plantões Futuros</div></div>
+      ${upcoming.map((e,i)=>{
+        const diff = Math.ceil((parseDate(e.date)-today)/86400000);
+        const isT = e.date===todayStr;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${i===0?'rgba(0,212,170,.05)':'var(--surface2)'};border-radius:8px;margin-bottom:6px;border:1px solid ${i===0?'rgba(0,212,170,.2)':'var(--border)'}">
+          <div style="width:36px;height:36px;border-radius:8px;background:${myTech?myTech.color+'18':'var(--surface3)'};border:1px solid ${myTech?myTech.color+'40':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:${myTech?myTech.color:'var(--text3)'}">${parseDate(e.date).getDate()}</span>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600;color:var(--text)">${fmtBR(e.date)}</div>
+            <div style="font-size:10px;color:var(--text3)">${parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long',month:'long'})}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:${isT?'var(--success)':diff<=7?'var(--accent3)':'var(--text3)'};background:${isT?'rgba(63,185,80,.1)':diff<=7?'rgba(245,158,11,.1)':'var(--surface3)'};padding:3px 9px;border-radius:9px">
+            ${isT?'HOJE':diff+'d'}
+          </span>
+          ${i===0?'<span class="tipo-badge tipo-normal">Próximo</span>':''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  document.getElementById('minha-escala-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// ALERTS / DASHBOARD (gestor)
 // ═══════════════════════════════════════════════
 function renderAlerts() {
   const today = new Date(), todayStr = formatDate(today);
   const alerts = [];
   const todayEsc = escalaByDate(todayStr);
+
   if (today.getDay()===6) {
     if (todayEsc?.tipo==='folga') alerts.push({cls:'info',icon:'⚡',msg:'Hoje é sábado de <strong>FOLGA</strong> — ninguém precisa ir presencialmente.'});
     else if (todayEsc?.tipo==='feriado') alerts.push({cls:'danger',icon:'🗓️',msg:`Hoje é <strong>FERIADO</strong>${todayEsc.obs?' · '+todayEsc.obs:''}`});
@@ -961,33 +1181,20 @@ function renderAlerts() {
       if(t) alerts.push({cls:'success',icon:'✅',msg:`Técnico de hoje: <strong style="color:${t.color}">${t.name}</strong>`});
     }
   }
-  // Personal: upcoming shift
-  if (currentUser?.techId) {
-    const myNext = state.escalas.filter(e=>e.date>todayStr&&e.tipo==='normal'&&e.techId===currentUser.techId).sort((a,b)=>a.date.localeCompare(b.date))[0];
-    if (myNext) {
-      const days=Math.ceil((parseDate(myNext.date)-today)/86400000);
-      var daysStr=days===1?' — <strong>amanhã!</strong>':' ('+days+' dias)';alerts.push({cls:days<=7?'warn':'info',icon:days<=7?'⏰':'📅',msg:'Seu próximo plantão: <strong>'+fmtBR(myNext.date)+'</strong>'+daysStr});
-    }
-    // Next Saturday NOT yours
-    const nextNormal = state.escalas.filter(e=>e.date>todayStr&&e.tipo==='normal'&&e.techId&&e.techId!==currentUser.techId).sort((a,b)=>a.date.localeCompare(b.date))[0];
-    if (nextNormal) {
-      const t=techById(nextNormal.techId);
-      const days=Math.ceil((parseDate(nextNormal.date)-today)/86400000);
-      if(days<=7&&t) alerts.push({cls:'info',icon:'ℹ️',msg:`Próximo sábado (${fmtBR(nextNormal.date)}) é de <strong style="color:${t.color}">${t.name}</strong> — não é o seu dia.`});
-    }
-  }
-  // Gestor: pending gestão
-  if (currentUser?.perfil==='gestor') {
-    const pendGestor = state.trocas.filter(t=>t.status==='aguardando_gestor').length;
-    if (pendGestor>0) alerts.push({cls:'gestor',icon:'👑',msg:`<strong>${pendGestor} troca(s)</strong> aguardando decisão do gestor.`});
-  }
+
+  // Pending gestor trocas
+  const pendGestor = state.trocas.filter(t=>t.status==='aguardando_gestor').length;
+  if (pendGestor>0) alerts.push({cls:'gestor',icon:'👑',msg:`<strong>${pendGestor} troca(s)</strong> aguardando decisão do gestor.`});
+
   // Todos juntos upcoming
   const nextTodos = state.escalas.filter(e=>e.date>=todayStr&&e.tipo==='todos').sort((a,b)=>a.date.localeCompare(b.date))[0];
   if(nextTodos&&nextTodos.date!==todayStr){const d=Math.ceil((parseDate(nextTodos.date)-today)/86400000);if(d<=14)alerts.push({cls:'todos',icon:'👥',msg:`Sábado de <strong>TODOS JUNTOS</strong> em <strong>${fmtBR(nextTodos.date)}</strong> (${d} dias)${nextTodos.obs?' · '+nextTodos.obs:''}` });}
+
   document.getElementById('dash-alerts').innerHTML = alerts.map(a=>`<div class="alert-banner ${a.cls}"><div class="alert-icon">${a.icon}</div><div>${a.msg}</div></div>`).join('');
 }
 
 function renderDashboard() {
+  if (!isGestor()) return;
   renderAlerts();
   const now=new Date(), todayStr=formatDate(now);
   const normal=state.escalas.filter(e=>e.tipo==='normal');
@@ -1017,12 +1224,14 @@ function renderDashboard() {
 }
 
 // ═══════════════════════════════════════════════
-// CALENDAR
+// CALENDAR — gestor: clickable. técnico: read-only
 // ═══════════════════════════════════════════════
 function renderCalendar() {
   const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
   const statusEl=document.getElementById('cal-rodizio-status');
-  if(ordered.length>0){
+
+  // Rodizio status — gestor only
+  if(isGestor() && ordered.length>0){
     statusEl.innerHTML=`<div class="rodizio-panel"><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Ordem do Rodízio
       <button class="btn btn-secondary btn-sm" onclick="openRodizioModal()" style="font-size:10px;padding:3px 9px">Gerar</button>
@@ -1040,6 +1249,7 @@ function renderCalendar() {
   const first=new Date(calYear,calMonth,1).getDay();
   const dim=new Date(calYear,calMonth+1,0).getDate();
   const dprev=new Date(calYear,calMonth,0).getDate();
+
   for(let i=0;i<first;i++) html+=`<div class="cal-day empty other-month"><span class="cal-num">${dprev-first+1+i}</span></div>`;
   for(let d=1;d<=dim;d++){
     const date=new Date(calYear,calMonth,d), isSat=date.getDay()===6, ds=formatDate(date);
@@ -1050,7 +1260,13 @@ function renderCalendar() {
     else if(tipo==='feriado'){cls='sat-feriado';badge='<span class="cal-sat-label" style="color:var(--feriado);font-size:7px">FERIADO</span>';}
     else if(tipo==='todos'){cls='sat-todos';badge='<span class="cal-sat-label" style="color:var(--todos);font-size:7px">TODOS</span>';}
     else if(tech) badge=`<span class="cal-tech-badge" style="background:${tech.color}">${tech.name}</span>`;
-    html+=`<div class="cal-day ${cls}" onclick="openAssign('${ds}')"><span class="cal-num">${d}</span>${badge}</div>`;
+
+    // Only gestor can click to edit
+    if (isGestor()) {
+      html+=`<div class="cal-day ${cls} clickable" onclick="openAssign('${ds}')"><span class="cal-num">${d}</span>${badge}</div>`;
+    } else {
+      html+=`<div class="cal-day ${cls}" title="${tech?tech.name:tipoLabel(tipo)||'Livre'}"><span class="cal-num">${d}</span>${badge}</div>`;
+    }
   }
   const rem=(first+dim)%7===0?0:7-(first+dim)%7;
   for(let i=1;i<=rem;i++) html+=`<div class="cal-day empty other-month"><span class="cal-num">${i}</span></div>`;
@@ -1069,8 +1285,13 @@ function renderCalendar() {
     const tcols={folga:'var(--folga)',feriado:'var(--feriado)',todos:'var(--todos)'};
     const dc=tipo&&tipo!=='normal'?tcols[tipo]:(t?t.color:'var(--text3)');
     const dn=tipo&&tipo!=='normal'?tipoLabel(tipo):(t?t.name+(t.role?' · '+t.role:''):'— sem técnico');
-    sideHtml+=`<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface2);border-radius:8px;margin-bottom:5px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="width:30px;height:30px;border-radius:7px;background:${dc}20;border:1px solid ${dc}40;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+
+    if (isGestor()) {
+      sideHtml+=`<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface2);border-radius:8px;margin-bottom:5px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">`;
+    } else {
+      sideHtml+=`<div style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface2);border-radius:8px;margin-bottom:5px;border:1px solid var(--border)">`;
+    }
+    sideHtml+=`<div style="width:30px;height:30px;border-radius:7px;background:${dc}20;border:1px solid ${dc}40;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${dc}">${d}</span>
       </div>
       <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text)">${fmtBR(ds)}</div><div style="font-size:10px;color:${dc}">${dn}</div></div>
@@ -1082,14 +1303,16 @@ function renderCalendar() {
 }
 function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
 
-// ASSIGN
+// ASSIGN (gestor only)
 function selectTipo(t,btn){
+  if (!requireGestor()) return;
   assignTipoSel=t;
   document.querySelectorAll('#assign-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
   if(btn)btn.classList.add('active-'+t);
   document.getElementById('assign-tech-section').style.display=t==='normal'?'block':'none';
 }
 function openAssign(ds){
+  if (!requireGestor()) return;
   assigningDate=ds;
   document.getElementById('modal-assign-title').textContent='Sábado — '+fmtBR(ds);
   document.getElementById('modal-assign-date').textContent=parseDate(ds).toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -1107,6 +1330,7 @@ function openAssign(ds){
   document.getElementById('modal-assign').style.display='flex';
 }
 async function saveAssign(){
+  if (!requireGestor()) return;
   const tipo=assignTipoSel, techId=tipo==='normal'?document.getElementById('assign-tech').value:null;
   const obs=document.getElementById('assign-obs').value;
   if(tipo==='normal'&&!techId){showToast('Selecione um técnico','error');return;}
@@ -1119,6 +1343,7 @@ async function saveAssign(){
   }catch(err){showToast('Erro: '+err.message,'error');}
 }
 async function removeEscalaByDate(){
+  if (!requireGestor()) return;
   try{
     await db.from('escalas').delete().eq('date',assigningDate);
     await audit('ESCALA_REMOVIDA','escalas',null,`Sábado ${fmtBR(assigningDate)} removido`);
@@ -1128,9 +1353,10 @@ async function removeEscalaByDate(){
 }
 
 // ═══════════════════════════════════════════════
-// ESCALAS PAGE
+// ESCALAS PAGE (gestor only)
 // ═══════════════════════════════════════════════
 function renderEscalas(){
+  if (!requireGestor()) return;
   const sorted=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
   const now=formatDate(new Date());
   const tbody=document.getElementById('escala-tbody');
@@ -1152,12 +1378,14 @@ function renderEscalas(){
 }
 
 function selectTipoEsc(t,btn){
+  if (!requireGestor()) return;
   escTipoSel=t;
   document.querySelectorAll('#esc-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
   if(btn)btn.classList.add('active-'+t);
   document.getElementById('esc-tech-section').style.display=t==='normal'?'block':'none';
 }
 function openAddEscala(){
+  if (!requireGestor()) return;
   editingEscalaId=null;escTipoSel='normal';
   document.getElementById('modal-escala-title').textContent='Nova Escala';
   document.getElementById('esc-date').value='';document.getElementById('esc-obs').value='';
@@ -1169,6 +1397,7 @@ function openAddEscala(){
   document.getElementById('modal-escala').style.display='flex';
 }
 function editEscala(id){
+  if (!requireGestor()) return;
   const e=state.escalas.find(x=>x.id===id);if(!e)return;
   editingEscalaId=id;escTipoSel=e.tipo;
   document.getElementById('modal-escala-title').textContent='Editar Escala';
@@ -1184,6 +1413,7 @@ function editEscala(id){
   document.getElementById('modal-escala').style.display='flex';
 }
 async function saveEscala(){
+  if (!requireGestor()) return;
   const date=document.getElementById('esc-date').value;
   const techId=document.getElementById('esc-tech').value;
   const obs=document.getElementById('esc-obs').value;
@@ -1205,6 +1435,7 @@ async function saveEscala(){
   }catch(err){showToast('Erro: '+err.message,'error');}
 }
 async function deleteEscala(id){
+  if (!requireGestor()) return;
   if(!confirm('Remover esta escala?'))return;
   const e=state.escalas.find(x=>x.id===id);
   try{
@@ -1214,14 +1445,13 @@ async function deleteEscala(id){
   }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-// DB helper
 async function dbUpsertEscala(date,techId,tipo,obs){
   const{data:row,error}=await db.from('escalas').upsert({date,tech_id:techId||null,tipo,obs},{onConflict:'date'}).select().single();
   if(error)throw error;return row;
 }
 
 // ═══════════════════════════════════════════════
-// TROCAS
+// TROCAS — filtered by role
 // ═══════════════════════════════════════════════
 function statusBadge(s){
   const map={pendente:'s-pendente',aguardando_gestor:'s-ag-gestor',aprovada:'s-aprovada',recusada:'s-recusada'};
@@ -1231,17 +1461,20 @@ function statusBadge(s){
 
 function renderTrocas(){
   const cont=document.getElementById('trocas-list');
-  const isGestor=currentUser?.perfil==='gestor';
-  if(!state.trocas.length){cont.innerHTML=`<div class="card"><div class="empty"><p>Nenhuma troca registrada</p></div></div>`;return;}
+  if(!state.trocas.length){cont.innerHTML=`<div class="card"><div class="empty"><p>Nenhuma troca ${isGestor()?'registrada':'encontrada para você'}</p></div></div>`;return;}
   let html='';
   state.trocas.forEach(tr=>{
     const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
     const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
     const fromTech=fromEsc?techById(fromEsc.techId):null;
     const toTech=toEsc?techById(toEsc.techId):null;
-    const sol=userById(tr.solicitanteId);
-    const aprov=userById(tr.aprovadorId);
-    const canRespond=currentUser&&(currentUser.id===tr.aprovadorId||(isGestor&&tr.status==='aguardando_gestor'));
+    // Solicitante name: gestor sees all, técnico sees own info
+    const sol = isGestor() ? userById(tr.solicitanteId) : (tr.solicitanteId===currentUser.id ? currentUser : null);
+    const aprov = isGestor() ? userById(tr.aprovadorId) : (tr.aprovadorId===currentUser.id ? currentUser : null);
+    const canRespond = currentUser && (
+      (tr.status==='pendente' && tr.aprovadorId===currentUser.id) ||
+      (isGestor() && tr.status==='aguardando_gestor')
+    );
     html+=`<div class="troca-card">
       <div class="troca-header">
         <div class="troca-dates">
@@ -1258,8 +1491,8 @@ function renderTrocas(){
           ${aprov?` · Aprovador: <strong style="color:var(--text2)">${aprov.name}</strong>`:''}
           ${tr.respostaMotivo?` · "${tr.respostaMotivo}"`:''}
         </div>
-        ${canRespond&&(tr.status==='pendente'||tr.status==='aguardando_gestor')?`<button class="btn btn-primary btn-sm" onclick="openRespostaTroca(${tr.id})">Responder</button>`:''}
-        ${isGestor?`<button class="btn btn-danger btn-sm" onclick="deleteTroca(${tr.id})">Remover</button>`:''}
+        ${canRespond?`<button class="btn btn-primary btn-sm" onclick="openRespostaTroca(${tr.id})">Responder</button>`:''}
+        ${isGestor()?`<button class="btn btn-danger btn-sm" onclick="deleteTroca(${tr.id})">Remover</button>`:''}
       </div>
     </div>`;
   });
@@ -1267,33 +1500,87 @@ function renderTrocas(){
 }
 
 function openAddTroca(){
-  const normal=[...state.escalas].filter(e=>e.tipo==='normal').sort((a,b)=>a.date.localeCompare(b.date));
+  // Técnicos can only see their own escalas for "from" selection
+  let normal;
+  if (isGestor()) {
+    normal = [...state.escalas].filter(e=>e.tipo==='normal').sort((a,b)=>a.date.localeCompare(b.date));
+  } else {
+    // Técnico: "from" is only their own escalas; "to" is all normal (to request a swap with another)
+    normal = [...state.escalas].filter(e=>e.tipo==='normal').sort((a,b)=>a.date.localeCompare(b.date));
+  }
   const opts=normal.map(e=>{const t=techById(e.techId);return`<option value="${e.id}">${fmtBR(e.date)} — ${t?t.name:'?'}</option>`;}).join('');
-  document.getElementById('troca-from').innerHTML=opts;
-  document.getElementById('troca-to').innerHTML=opts;
+
+  let myOpts;
+  if (!isGestor() && currentUser.techId) {
+    const myNormal = normal.filter(e=>e.techId===currentUser.techId);
+    myOpts = myNormal.map(e=>{const t=techById(e.techId);return`<option value="${e.id}">${fmtBR(e.date)} — ${t?t.name:'?'}</option>`;}).join('');
+  } else {
+    myOpts = opts;
+  }
+
+  document.getElementById('troca-from').innerHTML = myOpts || '<option value="">Sem escalas disponíveis</option>';
+  document.getElementById('troca-to').innerHTML = opts || '<option value="">Sem escalas disponíveis</option>';
   document.getElementById('troca-motivo').value='';
+
+  // Aprovador: only show OTHER users (não o próprio solicitante)
   const aprov=document.getElementById('troca-aprovador');
-  aprov.innerHTML='<option value="">— Selecione —</option>'+state.usuarios.map(u=>`<option value="${u.id}">${u.name} (${u.perfil})</option>`).join('');
+  const otherUsers = isGestor()
+    ? state.usuarios.filter(u=>u.id!==currentUser.id)
+    : state.usuarios.filter(u=>u.id!==currentUser.id && u.techId); // técnico só vê outros técnicos com vínculo
+  // Para técnico, carregamos lista de usuários ativos para seleção do aprovador
+  // Mas estado.usuarios apenas contém o próprio usuário para técnico.
+  // Precisamos buscar outros técnicos para o aprovador.
+  // Usaremos state.tecnicos para montar a lista de aprovadores.
+  if (!isGestor()) {
+    // Build list from tecnicos (public info, not sensitive)
+    const otherTechs = state.tecnicos.filter(t => t.id !== currentUser.techId);
+    aprov.innerHTML='<option value="">— Selecione —</option>';
+    // Map tecnicos to usuarios
+    const techUserMap = {}; // techId -> userId — needs lookup
+    // We fetch relevant users for the dropdown
+    db.from('usuarios').select('id,name,tech_id').eq('active',true).then(res=>{
+      const users = res.data || [];
+      const opts2 = users.filter(u=>u.id!==currentUser.id).map(u=>{
+        const t=techById(u.tech_id);
+        return`<option value="${u.id}">${u.name}${t?' ('+t.name+')':''}</option>`;
+      }).join('');
+      aprov.innerHTML='<option value="">— Selecione aprovador —</option>'+opts2;
+    });
+  } else {
+    aprov.innerHTML='<option value="">— Selecione —</option>'+state.usuarios.map(u=>`<option value="${u.id}">${u.name} (${u.perfil})</option>`).join('');
+  }
+
   document.getElementById('modal-troca').style.display='flex';
 }
+
 async function saveTroca(){
   const fromId=parseInt(document.getElementById('troca-from').value);
   const toId=parseInt(document.getElementById('troca-to').value);
   const motivo=document.getElementById('troca-motivo').value;
   const aprovId=parseInt(document.getElementById('troca-aprovador').value);
+  if(!fromId||!toId){showToast('Selecione as datas','error');return;}
   if(fromId===toId){showToast('Selecione datas diferentes','error');return;}
   if(!aprovId){showToast('Selecione quem deve aprovar','error');return;}
+  if(aprovId===currentUser.id){showToast('Você não pode ser o aprovador da própria troca','error');return;}
+
+  // Security: técnico can only request swap of their OWN escalas
+  if (!isGestor()) {
+    const fromEscCheck = state.escalas.find(e=>e.id===fromId);
+    if (!fromEscCheck || fromEscCheck.techId !== currentUser.techId) {
+      showToast('⛔ Você só pode solicitar troca dos seus próprios plantões','error');
+      return;
+    }
+  }
+
   try{
     const{data:row,error}=await db.from('trocas').insert({
       from_escala_id:fromId,to_escala_id:toId,motivo,status:'pendente',
-      solicitante_id:currentUser?.id||null,aprovador_id:aprovId
+      solicitante_id:currentUser.id,aprovador_id:aprovId
     }).select().single();
     if(error)throw error;
-    // Notificar aprovador
-    const aprov=userById(aprovId);
     const fromEsc=state.escalas.find(e=>e.id===fromId),toEsc=state.escalas.find(e=>e.id===toId);
     await createNotif(aprovId,'troca_pendente',`Troca aguardando sua aprovação`,
-      `${currentUser?.name||'Alguém'} solicitou trocar ${fromEsc?fmtBR(fromEsc.date):'?'} por ${toEsc?fmtBR(toEsc.date):'?'}. Motivo: ${motivo||'não informado'}`,row.id);
+      `${currentUser.name} solicitou trocar ${fromEsc?fmtBR(fromEsc.date):'?'} por ${toEsc?fmtBR(toEsc.date):'?'}. Motivo: ${motivo||'não informado'}`,row.id);
     await audit('TROCA_SOLICITADA','trocas',row.id,`Solicitação de troca: ${fromEsc?fmtBR(fromEsc.date):'?'} ↔ ${toEsc?fmtBR(toEsc.date):'?'}`);
     await dbLoad();closeModal('modal-troca');renderTrocas();
     showToast('Solicitação enviada! O técnico será notificado.','success');
@@ -1301,16 +1588,20 @@ async function saveTroca(){
 }
 
 function openRespostaTroca(id){
-  respondingTrocaId=id;
+  // Security: only aprovador or gestor (for aguardando_gestor) can respond
   const tr=state.trocas.find(t=>t.id===id);if(!tr)return;
+  const canRespond = (tr.status==='pendente' && tr.aprovadorId===currentUser.id) ||
+                     (isGestor() && tr.status==='aguardando_gestor');
+  if (!canRespond) { showToast('⛔ Você não tem permissão para responder esta troca','error'); return; }
+
+  respondingTrocaId=id;
   const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
   const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
   const fromTech=fromEsc?techById(fromEsc.techId):null,toTech=toEsc?techById(toEsc.techId):null;
-  const sol=userById(tr.solicitanteId);
-  const isGestorAction=tr.status==='aguardando_gestor'&&currentUser?.perfil==='gestor';
+  const isGestorAction=tr.status==='aguardando_gestor'&&isGestor();
   document.getElementById('modal-resp-title').textContent=isGestorAction?'Decisão do Gestor — Troca Recusada':'Responder Solicitação de Troca';
   document.getElementById('modal-resp-detail').innerHTML=`
-    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Solicitação de: ${sol?sol.name:'?'}</div>
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Solicitação de: ${currentUser.name}</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       <div style="text-align:center"><div style="font-size:10px;color:var(--text3)">De</div><div style="font-size:13px;font-weight:700">${fromEsc?fmtBR(fromEsc.date):'—'}</div><div style="font-size:10px;color:${fromTech?fromTech.color:'var(--text3)'}">${fromTech?fromTech.name:'—'}</div></div>
       <div style="font-size:20px;color:var(--text3)">⇄</div>
@@ -1326,34 +1617,36 @@ function openRespostaTroca(id){
 async function responderTroca(decisao){
   if(!respondingTrocaId)return;
   const tr=state.trocas.find(t=>t.id===respondingTrocaId);if(!tr)return;
+  // Re-verify permission before acting
+  const canRespond = (tr.status==='pendente' && tr.aprovadorId===currentUser.id) ||
+                     (isGestor() && tr.status==='aguardando_gestor');
+  if (!canRespond) { showToast('⛔ Permissão negada','error'); return; }
+
   const obs=document.getElementById('resp-motivo').value;
-  const isGestorAction=tr.status==='aguardando_gestor'&&currentUser?.perfil==='gestor';
+  const isGestorAction=tr.status==='aguardando_gestor'&&isGestor();
   let newStatus=decisao;
-  // Se técnico recusa → aguardando_gestor
   if(decisao==='recusada'&&!isGestorAction) newStatus='aguardando_gestor';
   try{
     await db.from('trocas').update({status:newStatus,resposta_motivo:obs,updated_at:new Date().toISOString()}).eq('id',respondingTrocaId);
     const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
     const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
-    // Se aprovada → trocar técnicos
     if(decisao==='aprovada'){
       if(fromEsc&&toEsc){
         await db.from('escalas').update({tech_id:toEsc.techId}).eq('id',fromEsc.id);
         await db.from('escalas').update({tech_id:fromEsc.techId}).eq('id',toEsc.id);
       }
-      // Notificar solicitante
       if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_aprovada','Troca aprovada ✅',
-        `${currentUser.name} aprovou sua solicitação de troca.${obs?' Obs: '+obs:''}`,respondingTrocaId);
+        `${currentUser.name} aprovou sua solicitação.${obs?' Obs: '+obs:''}`,respondingTrocaId);
       await audit('TROCA_APROVADA','trocas',respondingTrocaId,`Troca aprovada por ${currentUser.name}`);
     } else if(newStatus==='aguardando_gestor'){
-      // Notificar todos os gestores
-      state.usuarios.filter(u=>u.perfil==='gestor').forEach(async g=>{
+      // Notify all gestores
+      const {data:gestores} = await db.from('usuarios').select('id').eq('perfil','gestor').eq('active',true);
+      for(const g of (gestores||[])){
         await createNotif(g.id,'alerta_gestor','⚠️ Troca recusada — necessita decisão',
-          `${currentUser.name} recusou a troca solicitada por ${userById(tr.solicitanteId)?.name||'?'}. Motivo: ${obs||'não informado'}.`,respondingTrocaId);
-      });
-      // Notificar solicitante
+          `${currentUser.name} recusou troca. Motivo: ${obs||'não informado'}.`,respondingTrocaId);
+      }
       if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_recusada','Troca recusada ❌',
-        `${currentUser.name} recusou sua solicitação de troca. O gestor foi notificado.`,respondingTrocaId);
+        `${currentUser.name} recusou sua solicitação. O gestor foi notificado.`,respondingTrocaId);
       await audit('TROCA_RECUSADA','trocas',respondingTrocaId,`Recusada por ${currentUser.name} → aguardando gestor`);
     } else if(decisao==='recusada'&&isGestorAction){
       if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_recusada','Troca recusada definitivamente ❌',
@@ -1367,6 +1660,7 @@ async function responderTroca(decisao){
 }
 
 async function deleteTroca(id){
+  if (!requireGestor()) return;
   if(!confirm('Remover esta troca?'))return;
   try{
     await db.from('trocas').delete().eq('id',id);
@@ -1376,28 +1670,23 @@ async function deleteTroca(id){
 }
 
 // ═══════════════════════════════════════════════
-// NOTIFICAÇÕES
+// NOTIFICAÇÕES — only own
 // ═══════════════════════════════════════════════
 function renderNotificacoes(){
   if(!currentUser)return;
-  const isGestor=currentUser.perfil==='gestor';
-  // My notifs + gestor pending if gestor
-  let notifs=[...state.notificacoes.filter(n=>n.destinatarioId===currentUser.id)];
+  const notifs=state.notificacoes.filter(n=>n.destinatarioId===currentUser.id);
   const cont=document.getElementById('notif-list');
   if(!notifs.length){
     cont.innerHTML='<div class="card"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><p>Sem notificações</p></div></div>';return;
   }
   const tipoIcons={troca_pendente:'🔔',troca_recusada:'❌',troca_aprovada:'✅',alerta_gestor:'👑'};
-  const tipoCls={troca_pendente:'warn',troca_recusada:'danger',troca_aprovada:'success',alerta_gestor:'gestor'};
   cont.innerHTML='<div class="card" style="padding:14px">'+notifs.map(function(n){
     var unreadCls=n.lida?'':'unread';
-    var cursor=n.trocaId?'pointer':'default';
-    var dotCls=n.lida?'read':'';
     var icon=tipoIcons[n.tipo]||'📌';
     var dateStr=new Date(n.createdAt).toLocaleString('pt-BR');
     var verBtn=n.trocaId?('<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();markRead('+n.id+');navigate(\'trocas\')">Ver troca</button>'):'';
-    return '<div class="notif-item '+unreadCls+'" style="cursor:'+cursor+'" onclick="notifItemClick('+n.id+','+(n.trocaId?n.trocaId:'0')+')">'
-      +'<div class="notif-dot '+dotCls+'"></div>'
+    return '<div class="notif-item '+unreadCls+'" onclick="notifItemClick('+n.id+','+(n.trocaId?n.trocaId:'0')+')">'
+      +'<div class="notif-dot'+(n.lida?' read':'')+'"></div>'
       +'<div style="flex:1">'
       +'<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">'+icon+' '+n.titulo+'</div>'
       +'<div style="font-size:12px;color:var(--text2);margin-bottom:4px">'+n.mensagem+'</div>'
@@ -1405,12 +1694,12 @@ function renderNotificacoes(){
       +'</div>'+verBtn+'</div>';
   }).join('')+'</div>';
 }
-function notifItemClick(id, trocaId){
-  markRead(id);
-  if(trocaId && trocaId !== 0) navigate('trocas');
-}
+function notifItemClick(id,trocaId){ markRead(id); if(trocaId&&trocaId!==0) navigate('trocas'); }
 async function markRead(id){
-  try{await db.from('notificacoes').update({lida:true}).eq('id',id);await dbLoad();renderNotificacoes();}catch(e){}
+  // Security: only mark own notification as read
+  const notif = state.notificacoes.find(n=>n.id===id);
+  if (!notif || notif.destinatarioId!==currentUser.id) return;
+  try{await db.from('notificacoes').update({lida:true}).eq('id',id).eq('destinatario_id',currentUser.id);await dbLoad();renderNotificacoes();}catch(e){}
 }
 async function marcarTodasLidas(){
   if(!currentUser)return;
@@ -1421,7 +1710,7 @@ async function marcarTodasLidas(){
 }
 
 // ═══════════════════════════════════════════════
-// TÉCNICOS
+// TÉCNICOS — gestor: full CRUD | técnico: read-only
 // ═══════════════════════════════════════════════
 function renderTecnicos(){
   const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
@@ -1432,17 +1721,19 @@ function renderTecnicos(){
       <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">${t.name}</div><div style="font-size:11px;color:var(--text3)">${t.role||'Técnico'}</div></div>
       <span style="font-size:10px;color:var(--accent2);background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);border-radius:4px;padding:2px 7px;font-family:'DM Mono',monospace">#${t.ordemRodizio}</span>
       <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:2px 7px;background:var(--surface);border-radius:4px">${cnt} sáb.</span>
-      <div style="display:flex;gap:5px">
+      ${isGestor()?`<div style="display:flex;gap:5px">
         <button class="btn btn-secondary btn-sm" onclick="editTecnico(${t.id})">Editar</button>
         <button class="btn btn-danger btn-sm" onclick="deleteTecnico(${t.id})">Remover</button>
-      </div>
+      </div>`:''}
     </div>`;
   }).join('')||'<div class="empty"><p>Nenhum técnico</p></div>';
+
   const prev=document.getElementById('rodizio-queue-preview');
-  prev.innerHTML=ordered.length?('<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">'+ordered.map(function(t,i){return '<span style="display:flex;align-items:center;gap:5px;padding:5px 11px;background:'+t.color+'18;border:1px solid '+t.color+'40;border-radius:20px;font-size:11px;font-weight:700;color:'+t.color+'">'+(i+1)+'. '+t.name+'</span>'+(i<ordered.length-1?'<span style="color:var(--text3)">\u2192</span>':'<span style="color:var(--text3);font-size:10px">\u21a9 repete</span>');}).join('')+'</div>'):'<div style="font-size:12px;color:var(--text3)">Sem t\u00e9cnicos</div>'
+  prev.innerHTML=ordered.length?('<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">'+ordered.map(function(t,i){return '<span style="display:flex;align-items:center;gap:5px;padding:5px 11px;background:'+t.color+'18;border:1px solid '+t.color+'40;border-radius:20px;font-size:11px;font-weight:700;color:'+t.color+'">'+(i+1)+'. '+t.name+'</span>'+(i<ordered.length-1?'<span style="color:var(--text3)">→</span>':'<span style="color:var(--text3);font-size:10px">↩ repete</span>');}).join('')+'</div>'):'<div style="font-size:12px;color:var(--text3)">Sem técnicos</div>';
 }
 
 function openAddTecnico(){
+  if (!requireGestor()) return;
   editingTechId=null;
   const mx=Math.max(0,...state.tecnicos.map(t=>t.ordemRodizio));
   document.getElementById('modal-tech-title').textContent='Novo Técnico';
@@ -1452,6 +1743,7 @@ function openAddTecnico(){
   document.getElementById('modal-tecnico').style.display='flex';
 }
 function editTecnico(id){
+  if (!requireGestor()) return;
   const t=state.tecnicos.find(x=>x.id===id);if(!t)return;
   editingTechId=id;
   document.getElementById('modal-tech-title').textContent='Editar Técnico';
@@ -1462,6 +1754,7 @@ function editTecnico(id){
   document.getElementById('modal-tecnico').style.display='flex';
 }
 async function saveTecnico(){
+  if (!requireGestor()) return;
   const name=document.getElementById('tech-name-input').value.trim();
   const role=document.getElementById('tech-role-input').value.trim();
   const color=document.getElementById('tech-color-input').value;
@@ -1480,6 +1773,7 @@ async function saveTecnico(){
   }catch(err){showToast('Erro: '+err.message,'error');}
 }
 async function deleteTecnico(id){
+  if (!requireGestor()) return;
   if(!confirm('Remover técnico?'))return;
   const t=state.tecnicos.find(x=>x.id===id);
   try{
@@ -1490,24 +1784,22 @@ async function deleteTecnico(id){
 }
 
 // ═══════════════════════════════════════════════
-// AUDITORIA
+// AUDITORIA (gestor only)
 // ═══════════════════════════════════════════════
 function renderAuditoria(){
+  if (!requireGestor()) return;
   const filter=document.getElementById('audit-filter')?.value||'';
   const items=filter?state.auditLog.filter(a=>a.acao.startsWith(filter)):state.auditLog;
   const cont=document.getElementById('audit-list');
-  const acaoIcons={ESCALA_CRIADA:'📅',ESCALA_EDITADA:'✏️',ESCALA_REMOVIDA:'🗑️',TROCA_SOLICITADA:'🔄',TROCA_APROVADA:'✅',TROCA_RECUSADA:'❌',TROCA_RECUSADA_GESTOR:'👑',TROCA_REMOVIDA:'🗑️',TECNICO_CRIADO:'👤',TECNICO_EDITADO:'✏️',TECNICO_REMOVIDO:'🗑️',USUARIO_CRIADO:'🔑',USUARIO_EDITADO:'✏️',USUARIO_REMOVIDO:'🗑️'};
-  const acaoCls={ESCALA_CRIADA:'rgba(0,212,170,.1)',ESCALA_EDITADA:'rgba(14,165,233,.1)',ESCALA_REMOVIDA:'rgba(248,81,73,.1)',TROCA_SOLICITADA:'rgba(245,158,11,.1)',TROCA_APROVADA:'rgba(63,185,80,.1)',TROCA_RECUSADA:'rgba(248,81,73,.1)',TROCA_RECUSADA_GESTOR:'rgba(251,191,36,.1)',default:'rgba(139,148,158,.1)'};
+  const acaoIcons={ESCALA_CRIADA:'📅',ESCALA_EDITADA:'✏️',ESCALA_REMOVIDA:'🗑️',TROCA_SOLICITADA:'🔄',TROCA_APROVADA:'✅',TROCA_RECUSADA:'❌',TROCA_RECUSADA_GESTOR:'👑',TROCA_REMOVIDA:'🗑️',TECNICO_CRIADO:'👤',TECNICO_EDITADO:'✏️',TECNICO_REMOVIDO:'🗑️',USUARIO_CRIADO:'🔑',USUARIO_EDITADO:'✏️',USUARIO_REMOVIDO:'🗑️',RODIZIO_APLICADO:'⚙️'};
+  const acaoCls={ESCALA_CRIADA:'rgba(0,212,170,.1)',ESCALA_EDITADA:'rgba(14,165,233,.1)',ESCALA_REMOVIDA:'rgba(248,81,73,.1)',TROCA_SOLICITADA:'rgba(245,158,11,.1)',TROCA_APROVADA:'rgba(63,185,80,.1)',TROCA_RECUSADA:'rgba(248,81,73,.1)',default:'rgba(139,148,158,.1)'};
   if(!items.length){cont.innerHTML='<div class="card"><div class="empty"><p>Sem registros</p></div></div>';return;}
   cont.innerHTML='<div class="card" style="padding:14px">'+items.map(a=>`
     <div class="audit-item">
       <div class="audit-icon" style="background:${acaoCls[a.acao]||acaoCls.default}">${acaoIcons[a.acao]||'📝'}</div>
       <div style="flex:1">
         <div style="font-size:12px;font-weight:600;color:var(--text)">${a.detalhe||a.acao}</div>
-        <div class="audit-meta">
-          <span style="color:var(--text2);font-weight:600">${a.usuarioName}</span> · ${new Date(a.createdAt).toLocaleString('pt-BR')}
-          ${a.registroId?`<span style="color:var(--text3)"> · ID #${a.registroId}</span>`:''}
-        </div>
+        <div class="audit-meta"><span style="color:var(--text2);font-weight:600">${a.usuarioName}</span> · ${new Date(a.createdAt).toLocaleString('pt-BR')}${a.registroId?` · ID #${a.registroId}`:''}</div>
       </div>
       <span style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:2px 7px;background:var(--surface2);border-radius:4px;white-space:nowrap">${a.acao}</span>
     </div>
@@ -1515,9 +1807,10 @@ function renderAuditoria(){
 }
 
 // ═══════════════════════════════════════════════
-// USUÁRIOS
+// USUÁRIOS (gestor only) — técnicos NEVER see this page
 // ═══════════════════════════════════════════════
 function renderUsuarios(){
+  if (!requireGestor()) return;
   const tbody=document.getElementById('usuarios-tbody');
   tbody.innerHTML=state.usuarios.map(u=>{
     const t=u.techId?techById(u.techId):null;
@@ -1530,18 +1823,18 @@ function renderUsuarios(){
       <td>${t?`<span style="color:${t.color};font-weight:600">${t.name}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-secondary btn-sm" onclick="editUsuario(${u.id})">Editar</button>
-        ${u.id!==currentUser?.id?`<button class="btn btn-danger btn-sm" onclick="deleteUsuario(${u.id})">Remover</button>`:''}
+        ${u.id!==currentUser.id?`<button class="btn btn-danger btn-sm" onclick="deleteUsuario(${u.id})">Remover</button>`:'<span style="font-size:10px;color:var(--text3);padding:5px 11px">você</span>'}
       </div></td>
     </tr>`;
   }).join('');
 }
 
-let editingUserId2=null;
 function updateUsuarioTechField(){
   const p=document.getElementById('usuario-perfil-input').value;
   document.getElementById('usuario-tech-group').style.display=p==='tecnico'?'block':'none';
 }
 function openAddUsuario(){
+  if (!requireGestor()) return;
   editingUserId2=null;
   document.getElementById('modal-user-title').textContent='Novo Usuário';
   document.getElementById('usuario-name-input').value='';
@@ -1553,6 +1846,7 @@ function openAddUsuario(){
   document.getElementById('modal-usuario').style.display='flex';
 }
 function editUsuario(id){
+  if (!requireGestor()) return;
   const u=state.usuarios.find(x=>x.id===id);if(!u)return;
   editingUserId2=id;
   document.getElementById('modal-user-title').textContent='Editar Usuário';
@@ -1565,6 +1859,7 @@ function editUsuario(id){
   document.getElementById('modal-usuario').style.display='flex';
 }
 async function saveUsuario(){
+  if (!requireGestor()) return;
   const name=document.getElementById('usuario-name-input').value.trim();
   const pin=document.getElementById('usuario-pin-input').value.trim();
   const perfil=document.getElementById('usuario-perfil-input').value;
@@ -1584,7 +1879,8 @@ async function saveUsuario(){
   }catch(err){showToast('Erro: '+err.message,'error');}
 }
 async function deleteUsuario(id){
-  if(id===currentUser?.id){showToast('Não é possível remover sua própria conta','error');return;}
+  if (!requireGestor()) return;
+  if(id===currentUser.id){showToast('Não é possível remover sua própria conta','error');return;}
   if(!confirm('Remover usuário?'))return;
   const u=state.usuarios.find(x=>x.id===id);
   try{
@@ -1595,11 +1891,10 @@ async function deleteUsuario(id){
 }
 
 // ═══════════════════════════════════════════════
-// RODÍZIO
+// RODÍZIO (gestor only)
 // ═══════════════════════════════════════════════
 function getAllSaturdaysFromNow(limit=52){
   const sats=[],d=new Date();
-  // find next saturday
   const dayOfWeek=d.getDay();
   const daysUntilSat=dayOfWeek===6?0:(6-dayOfWeek);
   d.setDate(d.getDate()+daysUntilSat);
@@ -1608,6 +1903,7 @@ function getAllSaturdaysFromNow(limit=52){
 }
 let dragSrc=null;
 function openRodizioModal(){
+  if (!requireGestor()) return;
   const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
   const ss=document.getElementById('rodizio-start-tech');
   ss.innerHTML=ordered.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
@@ -1632,6 +1928,7 @@ function dropRodizio(target){
   if(si<ti)p.insertBefore(dragSrc,target.nextSibling);else p.insertBefore(dragSrc,target);
 }
 async function applyRodizio(){
+  if (!requireGestor()) return;
   const qtd=parseInt(document.getElementById('rodizio-qtd').value)||12;
   const startId=parseInt(document.getElementById('rodizio-start-tech').value);
   const items=document.querySelectorAll('#rodizio-order-list [data-id]');
@@ -1658,9 +1955,10 @@ async function applyRodizio(){
 }
 
 // ═══════════════════════════════════════════════
-// RELATÓRIOS
+// RELATÓRIOS (gestor only)
 // ═══════════════════════════════════════════════
 function renderRelatorios(){
+  if (!requireGestor()) return;
   const ySel=document.getElementById('rel-year'),mSel=document.getElementById('rel-month');
   const years=[...new Set(state.escalas.map(e=>parseDate(e.date).getFullYear()))];
   const cy=new Date().getFullYear();if(!years.includes(cy))years.push(cy);years.sort((a,b)=>b-a);
@@ -1693,9 +1991,10 @@ function renderPieChart(id,escalas,ref){
 }
 
 // ═══════════════════════════════════════════════
-// EXPORT
+// EXPORT (gestor only)
 // ═══════════════════════════════════════════════
 function exportExcel(){
+  if (!requireGestor()) return;
   const s=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
   const wd=[['Data','Dia','Tipo','Técnico','Obs']];
   s.forEach(e=>{const t=techById(e.techId);wd.push([fmtBR(e.date),parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long'}),tipoLabel(e.tipo),e.tipo==='todos'?'Todos':(t?t.name:'—'),e.obs||'']);});
@@ -1706,6 +2005,7 @@ function exportExcel(){
   showToast('Excel exportado!','success');
 }
 function exportTXT(){
+  if (!requireGestor()) return;
   const s=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
   let txt='=== ESCALAS DE SÁBADO — NSI UNA ===\n';
   txt+=`Gerado em: ${new Date().toLocaleString('pt-BR')} por ${currentUser?.name||'?'}\n\n`;
@@ -1743,7 +2043,6 @@ document.head.appendChild(style);
 // INIT
 // ═══════════════════════════════════════════════
 async function init(){
-  await dbLoad();
   showLogin();
 }
 init();
