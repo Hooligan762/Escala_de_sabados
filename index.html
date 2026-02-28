@@ -256,10 +256,40 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,17,23,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(4px)">
+  <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+  <div style="font-size:13px;color:var(--text3)">Sincronizando com Supabase...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:998;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;max-width:520px;width:100%">
+    <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:6px">Configurar Supabase</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:28px;line-height:1.6">Para usar o sistema com dados compartilhados entre toda a equipe, preencha suas credenciais do Supabase abaixo e salve o arquivo.</div>
+    <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:24px;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Passo a passo</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.9">
+        1. Acesse <strong style="color:var(--accent)">supabase.com</strong> e crie um projeto gratuito<br>
+        2. Vá em <strong>SQL Editor</strong> e execute o arquivo <strong>schema_supabase.sql</strong><br>
+        3. Vá em <strong>Settings → API</strong> e copie a URL e a anon key<br>
+        4. Abra este arquivo HTML em um editor de texto<br>
+        5. Substitua <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">https://tsxnwulbwtrawhjaswcw.supabase.co</code> e <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">sb_publishable_z6FkNvbQB9opjfrwT8NxhQ_6tAB6pkL</code><br>
+        6. Salve e reabra — todos os colegas verão os mesmos dados!
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);text-align:center">O Supabase é gratuito para projetos pequenos e não expira.</div>
+  </div>
+</div>
+
 <!-- MOBILE HEADER -->
 <header class="mobile-header">
   <div class="mobile-logo">Escalas <span>NSI</span></div>
-  <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">UNA</div>
+  <div style="text-align:right">
+    <div style="font-size:13px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace" id="mobile-clock"></div>
+    <div style="font-size:10px;color:var(--text3)" id="mobile-date"></div>
+  </div>
 </header>
 
 <div class="app">
@@ -297,7 +327,9 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
     </div>
   </nav>
   <div class="sidebar-footer">
-    <div class="version">v1.0 · NSI UNA</div>
+    <div class="version" id="live-clock" style="font-size:13px;color:var(--text2);font-weight:600"></div>
+    <div class="version" id="live-date" style="margin-top:3px"></div>
+    <div class="version" style="margin-top:4px">v1.0 · NSI UNA</div>
   </div>
 </aside>
 
@@ -309,7 +341,7 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
   <div class="page-header">
     <div>
       <div class="page-title">Dashboard</div>
-      <div class="page-sub" id="dash-date-sub">Visão geral das escalas</div>
+      <div class="page-sub" id="dash-date-sub"></div>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="exportExcel()">
@@ -609,76 +641,122 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
   </div>
 </nav>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-// ===================== DATA =====================
-let state = {
-  tecnicos: [],
-  escalas: [],
-  trocas: []
-};
-let editingTechId = null;
+// =====================================================
+// CONFIGURAÇÃO — cole aqui suas credenciais Supabase
+// Encontre em: supabase.com → seu projeto → Settings → API
+// =====================================================
+const SUPABASE_URL  = 'https://tsxnwulbwtrawhjaswcw.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_z6FkNvbQB9opjfrwT8NxhQ_6tAB6pkL';
+// =====================================================
+
+const isConfigured = SUPABASE_KEY.length > 10;
+let db = null;
+if (isConfigured) {
+  db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+
+// ===================== STATE (cache local) =====================
+let state = { tecnicos: [], escalas: [], trocas: [] };
+let editingTechId   = null;
 let editingEscalaId = null;
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
+let calYear    = new Date().getFullYear();
+let calMonth   = new Date().getMonth();
 let assigningDate = null;
-let chartDash = null, chartBar = null, chartPie = null;
+let chartDash  = null, chartBar = null, chartPie = null;
 
-function save() {
-  localStorage.setItem('nsi_escalas_v1', JSON.stringify(state));
-}
-function load() {
-  const d = localStorage.getItem('nsi_escalas_v1');
-  if (d) {
-    state = JSON.parse(d);
-  } else {
-    // Demo data
-    state.tecnicos = [
-      { id: 1, name: 'Ismael', role: 'Técnico Sênior', color: '#00d4aa', active: true },
-      { id: 2, name: 'Bernardo', role: 'Técnico PCD', color: '#0ea5e9', active: true },
-      { id: 3, name: 'Lucas', role: 'Técnico Jr', color: '#f59e0b', active: true },
-      { id: 4, name: 'Ana', role: 'Aprendiz', color: '#a855f7', active: true },
-    ];
-    // Generate some saturdays for current month
-    const now = new Date();
-    const sats = getSaturdaysOfMonth(now.getFullYear(), now.getMonth());
-    sats.forEach((d, i) => {
-      state.escalas.push({
-        id: Date.now() + i,
-        date: d,
-        techId: state.tecnicos[i % state.tecnicos.length].id,
-        obs: ''
-      });
-    });
-    save();
+// ===================== DB HELPERS =====================
+async function dbLoad() {
+  if (!db) return;
+  setLoading(true);
+  try {
+    const [{ data: tecnicos }, { data: escalas }, { data: trocas }] = await Promise.all([
+      db.from('tecnicos').select('*').eq('active', true).order('name'),
+      db.from('escalas').select('*').order('date'),
+      db.from('trocas').select('*').order('created_at', { ascending: false })
+    ]);
+    // Map snake_case → camelCase
+    state.tecnicos = (tecnicos || []).map(t => ({
+      id: t.id, name: t.name, role: t.role, color: t.color, active: t.active
+    }));
+    state.escalas = (escalas || []).map(e => ({
+      id: e.id, date: e.date, techId: e.tech_id, obs: e.obs || ''
+    }));
+    state.trocas = (trocas || []).map(t => ({
+      id: t.id, fromEscalaId: t.from_escala_id, toEscalaId: t.to_escala_id,
+      motivo: t.motivo, status: t.status
+    }));
+  } catch(err) {
+    showToast('Erro ao carregar dados: ' + err.message, 'error');
   }
+  setLoading(false);
 }
 
-function getSaturdaysOfMonth(y, m) {
-  const sats = [];
-  const d = new Date(y, m, 1);
-  while (d.getMonth() === m) {
-    if (d.getDay() === 6) sats.push(formatDate(d));
-    d.setDate(d.getDate() + 1);
-  }
-  return sats;
+async function dbInsertTecnico(data) {
+  const { data: row, error } = await db.from('tecnicos').insert({
+    name: data.name, role: data.role, color: data.color, active: true
+  }).select().single();
+  if (error) throw error;
+  return { ...data, id: row.id };
 }
 
-function formatDate(d) {
-  return d.toISOString().split('T')[0];
+async function dbUpdateTecnico(id, data) {
+  const { error } = await db.from('tecnicos').update({
+    name: data.name, role: data.role, color: data.color
+  }).eq('id', id);
+  if (error) throw error;
 }
-function parseDate(s) { return new Date(s + 'T12:00:00'); }
-function fmtBR(s) {
-  const d = parseDate(s);
-  return d.toLocaleDateString('pt-BR');
+
+async function dbDeleteTecnico(id) {
+  const { error } = await db.from('tecnicos').update({ active: false }).eq('id', id);
+  if (error) throw error;
 }
-function fmtMonthYear(y, m) {
-  return new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+async function dbUpsertEscala(date, techId, obs) {
+  const { data: row, error } = await db.from('escalas').upsert(
+    { date, tech_id: techId, obs },
+    { onConflict: 'date' }
+  ).select().single();
+  if (error) throw error;
+  return row;
 }
-function techById(id) { return state.tecnicos.find(t => t.id == id); }
-function escalaByDate(d) { return state.escalas.find(e => e.date === d); }
+
+async function dbDeleteEscala(id) {
+  const { error } = await db.from('escalas').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function dbDeleteEscalaByDate(date) {
+  const { error } = await db.from('escalas').delete().eq('date', date);
+  if (error) throw error;
+}
+
+async function dbInsertTroca(data) {
+  const { data: row, error } = await db.from('trocas').insert({
+    from_escala_id: data.fromEscalaId,
+    to_escala_id:   data.toEscalaId,
+    motivo:         data.motivo,
+    status:         data.status
+  }).select().single();
+  if (error) throw error;
+  return { ...data, id: row.id };
+}
+
+async function dbDeleteTroca(id) {
+  const { error } = await db.from('trocas').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ===================== LOADING UI =====================
+function setLoading(on) {
+  document.getElementById('loading-overlay').style.display = on ? 'flex' : 'none';
+}
 
 // ===================== NAVIGATE =====================
-function navigate(page) {
+async function navigate(page) {
   const pages = ['dashboard','calendar','escalas','trocas','tecnicos','relatorios'];
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -688,26 +766,48 @@ function navigate(page) {
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   const bnavEl = document.getElementById('bnav-' + page);
   if (bnavEl) bnavEl.classList.add('active');
-  // Scroll to top on mobile
   window.scrollTo(0, 0);
-  if (page === 'dashboard') renderDashboard();
-  if (page === 'calendar') renderCalendar();
-  if (page === 'escalas') renderEscalas();
-  if (page === 'trocas') renderTrocas();
-  if (page === 'tecnicos') renderTecnicos();
-  if (page === 'relatorios') renderRelatorios();
+  // Reload data from Supabase on each navigation
+  await dbLoad();
+  if (page === 'dashboard')   renderDashboard();
+  if (page === 'calendar')    renderCalendar();
+  if (page === 'escalas')     renderEscalas();
+  if (page === 'trocas')      renderTrocas();
+  if (page === 'tecnicos')    renderTecnicos();
+  if (page === 'relatorios')  renderRelatorios();
+}
+
+// ===================== UTILS =====================
+function getSaturdaysOfMonth(y, m) {
+  const sats = [], d = new Date(y, m, 1);
+  while (d.getMonth() === m) {
+    if (d.getDay() === 6) sats.push(formatDate(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return sats;
+}
+function formatDate(d) { return d.toISOString().split('T')[0]; }
+function parseDate(s) { return new Date(s + 'T12:00:00'); }
+function fmtBR(s) { return parseDate(s).toLocaleDateString('pt-BR'); }
+function fmtMonthYear(y, m) { return new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); }
+function techById(id) { return state.tecnicos.find(t => t.id == id); }
+function escalaByDate(d) { return state.escalas.find(e => e.date === d); }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // ===================== DASHBOARD =====================
 function renderDashboard() {
   const now = new Date();
-  document.getElementById('dash-date-sub').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  // Stats
-  const totalEscalas = state.escalas.length;
+  const totalEscalas  = state.escalas.length;
   const totalTecnicos = state.tecnicos.filter(t => t.active).length;
-  const trocasAprov = state.trocas.filter(t => t.status === 'aprovada').length;
-  const trocasPend = state.trocas.filter(t => t.status === 'pendente').length;
+  const trocasAprov   = state.trocas.filter(t => t.status === 'aprovada').length;
+  const trocasPend    = state.trocas.filter(t => t.status === 'pendente').length;
 
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card c1"><div class="stat-label">Total Escalas</div><div class="stat-val">${totalEscalas}</div><div class="stat-sub">sábados cadastrados</div></div>
@@ -716,7 +816,6 @@ function renderDashboard() {
     <div class="stat-card" style="border-top:2px solid #a855f7"><div class="stat-label">Trocas Pendentes</div><div class="stat-val">${trocasPend}</div><div class="stat-sub">aguardando aprovação</div></div>
   `;
 
-  // Next saturdays
   const upcoming = state.escalas
     .filter(e => parseDate(e.date) >= new Date())
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -737,8 +836,6 @@ function renderDashboard() {
       </div>`;
     }).join('');
   }
-
-  // Chart
   const thisMonth = state.escalas.filter(e => {
     const d = parseDate(e.date);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
@@ -750,27 +847,22 @@ function renderDashboard() {
 function renderCalendar() {
   document.getElementById('cal-month-label').textContent = fmtMonthYear(calYear, calMonth);
   const grid = document.getElementById('cal-grid');
-
   const headers = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   let html = headers.map(h => `<div class="cal-day-header">${h}</div>`).join('');
 
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
 
-  // Prev month
   for (let i = 0; i < firstDay; i++) {
-    const day = daysInPrev - firstDay + 1 + i;
-    html += `<div class="cal-day empty other-month"><span class="cal-num">${day}</span></div>`;
+    html += `<div class="cal-day empty other-month"><span class="cal-num">${daysInPrev - firstDay + 1 + i}</span></div>`;
   }
-
   for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(calYear, calMonth, d);
-    const isSat = date.getDay() === 6;
+    const date   = new Date(calYear, calMonth, d);
+    const isSat  = date.getDay() === 6;
     const dateStr = formatDate(date);
     const escala = escalaByDate(dateStr);
-    const tech = escala ? techById(escala.techId) : null;
-
+    const tech   = escala ? techById(escala.techId) : null;
     if (isSat) {
       html += `<div class="cal-day saturday" onclick="openAssign('${dateStr}')">
         <span class="cal-num">${d}</span>
@@ -780,78 +872,64 @@ function renderCalendar() {
       html += `<div class="cal-day"><span class="cal-num">${d}</span></div>`;
     }
   }
-
-  // Remaining
   const total = firstDay + daysInMonth;
   const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let i = 1; i <= remaining; i++) {
     html += `<div class="cal-day empty other-month"><span class="cal-num">${i}</span></div>`;
   }
-
   grid.innerHTML = html;
 
-  // Legend
-  const legend = document.getElementById('cal-legend');
-  legend.innerHTML = state.tecnicos.filter(t => t.active).map(t =>
+  document.getElementById('cal-legend').innerHTML = state.tecnicos.filter(t => t.active).map(t =>
     `<div style="display:flex;align-items:center;gap:6px">
       <div style="width:8px;height:8px;border-radius:50%;background:${t.color}"></div>
       <span style="font-size:11px;color:var(--text2)">${t.name}</span>
-    </div>`
-  ).join('');
+    </div>`).join('');
 
-  // Sidebar list of saturdays
   const sideList = document.getElementById('cal-sidebar-list');
   const sats = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(calYear, calMonth, d);
     if (date.getDay() === 6) {
       const ds = formatDate(date);
-      const e = escalaByDate(ds);
-      const t = e ? techById(e.techId) : null;
-      sats.push({ ds, d, e, t });
+      const e  = escalaByDate(ds);
+      const t  = e ? techById(e.techId) : null;
+      sats.push({ ds, d, t });
     }
   }
   const now2 = formatDate(new Date());
-  if (sats.length === 0) {
-    sideList.innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Nenhum sábado neste mês</div>';
-  } else {
-    sideList.innerHTML = sats.map(({ ds, d, t }) => {
-      const isPast = ds < now2;
-      const isToday = ds === now2;
-      const statusColor = isPast ? 'var(--text3)' : isToday ? 'var(--accent3)' : 'var(--success)';
-      const statusLabel = isPast ? 'Realizado' : isToday ? 'Hoje' : 'Agendado';
-      return `<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s" 
-        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="width:32px;height:32px;border-radius:8px;background:${t ? t.color + '22' : 'var(--surface)'};border:1px solid ${t ? t.color + '44' : 'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${t ? t.color : 'var(--text3)'}">S${d}</span>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--text)">${fmtBR(ds)}</div>
-          <div style="font-size:11px;color:${t ? t.color : 'var(--text3)'};">${t ? t.name + (t.role ? ' · ' + t.role : '') : '— sem técnico'}</div>
-        </div>
-        <span style="font-size:10px;font-weight:600;color:${statusColor};background:${statusColor}22;padding:2px 8px;border-radius:10px">${statusLabel}</span>
-      </div>`;
-    }).join('');
-  }
+  sideList.innerHTML = sats.map(({ ds, d, t }) => {
+    const isPast = ds < now2, isToday = ds === now2;
+    const statusColor = isPast ? 'var(--text3)' : isToday ? 'var(--accent3)' : 'var(--success)';
+    const statusLabel = isPast ? 'Realizado' : isToday ? 'Hoje' : 'Agendado';
+    return `<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:32px;height:32px;border-radius:8px;background:${t ? t.color+'22':'var(--surface)'};border:1px solid ${t ? t.color+'44':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${t ? t.color:'var(--text3)'}">S${d}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${fmtBR(ds)}</div>
+        <div style="font-size:11px;color:${t ? t.color:'var(--text3)'};">${t ? t.name + (t.role ? ' · ' + t.role : '') : '— sem técnico'}</div>
+      </div>
+      <span style="font-size:10px;font-weight:600;color:${statusColor};background:${statusColor}22;padding:2px 8px;border-radius:10px">${statusLabel}</span>
+    </div>`;
+  }).join('') || '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Nenhum sábado neste mês</div>';
 }
 
 function changeMonth(dir) {
   calMonth += dir;
   if (calMonth > 11) { calMonth = 0; calYear++; }
-  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
   renderCalendar();
 }
 
-// ===================== ASSIGN (CALENDAR) =====================
+// ===================== ASSIGN =====================
 function openAssign(dateStr) {
   assigningDate = dateStr;
   document.getElementById('modal-assign-title').textContent = 'Sábado — ' + fmtBR(dateStr);
-  document.getElementById('modal-assign-date').textContent = parseDate(dateStr).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
+  document.getElementById('modal-assign-date').textContent  = parseDate(dateStr).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const sel = document.getElementById('assign-tech');
   sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
     `<option value="${t.id}">${t.name}</option>`).join('');
-
   const existing = escalaByDate(dateStr);
   if (existing) {
     sel.value = existing.techId;
@@ -861,49 +939,44 @@ function openAssign(dateStr) {
     document.getElementById('assign-obs').value = '';
     document.getElementById('assign-remove-btn').style.display = 'none';
   }
-
   document.getElementById('modal-assign').style.display = 'flex';
 }
 
-function saveAssign() {
+async function saveAssign() {
   const techId = document.getElementById('assign-tech').value;
-  const obs = document.getElementById('assign-obs').value;
+  const obs    = document.getElementById('assign-obs').value;
   if (!techId) { showToast('Selecione um técnico', 'error'); return; }
-
-  const existing = escalaByDate(assigningDate);
-  if (existing) {
-    existing.techId = parseInt(techId);
-    existing.obs = obs;
-  } else {
-    state.escalas.push({ id: Date.now(), date: assigningDate, techId: parseInt(techId), obs });
-  }
-  save();
-  closeModal('modal-assign');
-  renderCalendar();
-  showToast('Escala salva!', 'success');
+  try {
+    await dbUpsertEscala(assigningDate, parseInt(techId), obs);
+    await dbLoad();
+    closeModal('modal-assign');
+    renderCalendar();
+    showToast('Escala salva!', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
-function removeEscalaByDate() {
-  state.escalas = state.escalas.filter(e => e.date !== assigningDate);
-  save();
-  closeModal('modal-assign');
-  renderCalendar();
-  showToast('Escala removida', 'success');
+async function removeEscalaByDate() {
+  try {
+    await dbDeleteEscalaByDate(assigningDate);
+    await dbLoad();
+    closeModal('modal-assign');
+    renderCalendar();
+    showToast('Escala removida', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
 // ===================== ESCALAS =====================
 function renderEscalas() {
   const sorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  const now = formatDate(new Date());
-  const tbody = document.getElementById('escala-tbody');
+  const now    = formatDate(new Date());
+  const tbody  = document.getElementById('escala-tbody');
   if (sorted.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><p>Nenhuma escala cadastrada ainda</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = sorted.map(e => {
     const t = techById(e.techId);
-    const isPast = e.date < now;
-    const isToday = e.date === now;
+    const isPast = e.date < now, isToday = e.date === now;
     return `<tr>
       <td><span style="font-family:DM Mono,monospace;font-size:12px">${fmtBR(e.date)}</span></td>
       <td style="text-transform:capitalize">${parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long'})}</td>
@@ -925,7 +998,7 @@ function openAddEscala() {
   editingEscalaId = null;
   document.getElementById('modal-escala-title').textContent = 'Nova Escala de Sábado';
   document.getElementById('esc-date').value = '';
-  document.getElementById('esc-obs').value = '';
+  document.getElementById('esc-obs').value  = '';
   const sel = document.getElementById('esc-tech');
   sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
     `<option value="${t.id}">${t.name}</option>`).join('');
@@ -938,7 +1011,7 @@ function editEscala(id) {
   editingEscalaId = id;
   document.getElementById('modal-escala-title').textContent = 'Editar Escala';
   document.getElementById('esc-date').value = e.date;
-  document.getElementById('esc-obs').value = e.obs || '';
+  document.getElementById('esc-obs').value  = e.obs || '';
   const sel = document.getElementById('esc-tech');
   sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
     `<option value="${t.id}">${t.name}</option>`).join('');
@@ -946,31 +1019,34 @@ function editEscala(id) {
   document.getElementById('modal-escala').style.display = 'flex';
 }
 
-function saveEscala() {
-  const date = document.getElementById('esc-date').value;
+async function saveEscala() {
+  const date  = document.getElementById('esc-date').value;
   const techId = document.getElementById('esc-tech').value;
-  const obs = document.getElementById('esc-obs').value;
-  if (!date) { showToast('Informe a data', 'error'); return; }
+  const obs   = document.getElementById('esc-obs').value;
+  if (!date)   { showToast('Informe a data', 'error'); return; }
   if (!techId) { showToast('Selecione um técnico', 'error'); return; }
-
-  if (editingEscalaId) {
-    const e = state.escalas.find(x => x.id === editingEscalaId);
-    e.date = date; e.techId = parseInt(techId); e.obs = obs;
-  } else {
-    state.escalas.push({ id: Date.now(), date, techId: parseInt(techId), obs });
-  }
-  save();
-  closeModal('modal-escala');
-  renderEscalas();
-  showToast('Escala salva!', 'success');
+  try {
+    if (editingEscalaId) {
+      const e = state.escalas.find(x => x.id === editingEscalaId);
+      await db.from('escalas').update({ date, tech_id: parseInt(techId), obs }).eq('id', editingEscalaId);
+    } else {
+      await dbUpsertEscala(date, parseInt(techId), obs);
+    }
+    await dbLoad();
+    closeModal('modal-escala');
+    renderEscalas();
+    showToast('Escala salva!', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
-function deleteEscala(id) {
+async function deleteEscala(id) {
   if (!confirm('Remover esta escala?')) return;
-  state.escalas = state.escalas.filter(e => e.id !== id);
-  save();
-  renderEscalas();
-  showToast('Escala removida', 'success');
+  try {
+    await dbDeleteEscala(id);
+    await dbLoad();
+    renderEscalas();
+    showToast('Escala removida', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
 // ===================== TROCAS =====================
@@ -980,31 +1056,26 @@ function renderTrocas() {
     cont.innerHTML = `<div class="card"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><p>Nenhuma troca registrada ainda</p></div></div>`;
     return;
   }
-  const sorted = [...state.trocas].sort((a, b) => b.id - a.id);
   cont.innerHTML = `<div class="card"><div style="display:flex;flex-direction:column;gap:10px">` +
-    sorted.map(tr => {
-      const fromEsc = state.escalas.find(e => e.id === tr.fromEscalaId);
-      const toEsc = state.escalas.find(e => e.id === tr.toEscalaId);
+    state.trocas.map(tr => {
+      const fromEsc  = state.escalas.find(e => e.id === tr.fromEscalaId);
+      const toEsc    = state.escalas.find(e => e.id === tr.toEscalaId);
       const fromTech = fromEsc ? techById(fromEsc.techId) : null;
-      const toTech = toEsc ? techById(toEsc.techId) : null;
+      const toTech   = toEsc   ? techById(toEsc.techId)   : null;
       const badgeClass = tr.status === 'aprovada' ? 'badge-green' : tr.status === 'recusada' ? 'badge-red' : 'badge-yellow';
       return `<div class="swap-card">
         <div class="swap-dates">
-          <div class="swap-date">
-            <div class="swap-date-label">De</div>
+          <div class="swap-date"><div class="swap-date-label">De</div>
             <div class="swap-date-val">${fromEsc ? fmtBR(fromEsc.date) : '—'}</div>
             <div style="font-size:11px;color:${fromTech ? fromTech.color : 'var(--text3)'}">${fromTech ? fromTech.name : '—'}</div>
           </div>
           <svg class="swap-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-          <div class="swap-date">
-            <div class="swap-date-label">Para</div>
+          <div class="swap-date"><div class="swap-date-label">Para</div>
             <div class="swap-date-val">${toEsc ? fmtBR(toEsc.date) : '—'}</div>
             <div style="font-size:11px;color:${toTech ? toTech.color : 'var(--text3)'}">${toTech ? toTech.name : '—'}</div>
           </div>
         </div>
-        <div style="flex:1;padding:0 12px">
-          <div style="font-size:12px;color:var(--text3)">${tr.motivo || 'Sem motivo'}</div>
-        </div>
+        <div style="flex:1;padding:0 12px"><div style="font-size:12px;color:var(--text3)">${tr.motivo || 'Sem motivo'}</div></div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <span class="badge ${badgeClass}">${tr.status}</span>
           <button class="btn btn-danger btn-sm" onclick="deleteTroca(${tr.id})">Remover</button>
@@ -1019,42 +1090,44 @@ function openAddTroca() {
     const t = techById(e.techId);
     return `<option value="${e.id}">${fmtBR(e.date)} — ${t ? t.name : '?'}</option>`;
   }).join('');
-  document.getElementById('troca-from').innerHTML = opts;
-  document.getElementById('troca-to').innerHTML = opts;
-  document.getElementById('troca-motivo').value = '';
-  document.getElementById('troca-status').value = 'pendente';
+  document.getElementById('troca-from').innerHTML   = opts;
+  document.getElementById('troca-to').innerHTML     = opts;
+  document.getElementById('troca-motivo').value     = '';
+  document.getElementById('troca-status').value     = 'pendente';
   document.getElementById('modal-troca').style.display = 'flex';
 }
 
-function saveTroca() {
-  const fromId = parseInt(document.getElementById('troca-from').value);
-  const toId = parseInt(document.getElementById('troca-to').value);
-  const motivo = document.getElementById('troca-motivo').value;
-  const status = document.getElementById('troca-status').value;
+async function saveTroca() {
+  const fromId  = parseInt(document.getElementById('troca-from').value);
+  const toId    = parseInt(document.getElementById('troca-to').value);
+  const motivo  = document.getElementById('troca-motivo').value;
+  const status  = document.getElementById('troca-status').value;
   if (fromId === toId) { showToast('Selecione datas diferentes', 'error'); return; }
-
-  state.trocas.push({ id: Date.now(), fromEscalaId: fromId, toEscalaId: toId, motivo, status });
-
-  if (status === 'aprovada') {
-    const fromEsc = state.escalas.find(e => e.id === fromId);
-    const toEsc = state.escalas.find(e => e.id === toId);
-    if (fromEsc && toEsc) {
-      [fromEsc.techId, toEsc.techId] = [toEsc.techId, fromEsc.techId];
+  try {
+    await dbInsertTroca({ fromEscalaId: fromId, toEscalaId: toId, motivo, status });
+    if (status === 'aprovada') {
+      const fromEsc = state.escalas.find(e => e.id === fromId);
+      const toEsc   = state.escalas.find(e => e.id === toId);
+      if (fromEsc && toEsc) {
+        await db.from('escalas').update({ tech_id: toEsc.techId }).eq('id', fromId);
+        await db.from('escalas').update({ tech_id: fromEsc.techId }).eq('id', toId);
+      }
     }
-  }
-
-  save();
-  closeModal('modal-troca');
-  renderTrocas();
-  showToast('Troca registrada!', 'success');
+    await dbLoad();
+    closeModal('modal-troca');
+    renderTrocas();
+    showToast('Troca registrada!', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
-function deleteTroca(id) {
+async function deleteTroca(id) {
   if (!confirm('Remover esta troca?')) return;
-  state.trocas = state.trocas.filter(t => t.id !== id);
-  save();
-  renderTrocas();
-  showToast('Troca removida', 'success');
+  try {
+    await dbDeleteTroca(id);
+    await dbLoad();
+    renderTrocas();
+    showToast('Troca removida', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
 // ===================== TÉCNICOS =====================
@@ -1084,8 +1157,8 @@ function renderTecnicos() {
 function openAddTecnico() {
   editingTechId = null;
   document.getElementById('modal-tech-title').textContent = 'Novo Técnico';
-  document.getElementById('tech-name-input').value = '';
-  document.getElementById('tech-role-input').value = '';
+  document.getElementById('tech-name-input').value  = '';
+  document.getElementById('tech-role-input').value  = '';
   document.getElementById('tech-color-input').value = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
   document.getElementById('modal-tecnico').style.display = 'flex';
 }
@@ -1095,56 +1168,55 @@ function editTecnico(id) {
   if (!t) return;
   editingTechId = id;
   document.getElementById('modal-tech-title').textContent = 'Editar Técnico';
-  document.getElementById('tech-name-input').value = t.name;
-  document.getElementById('tech-role-input').value = t.role || '';
+  document.getElementById('tech-name-input').value  = t.name;
+  document.getElementById('tech-role-input').value  = t.role || '';
   document.getElementById('tech-color-input').value = t.color;
   document.getElementById('modal-tecnico').style.display = 'flex';
 }
 
-function saveTecnico() {
-  const name = document.getElementById('tech-name-input').value.trim();
-  const role = document.getElementById('tech-role-input').value.trim();
+async function saveTecnico() {
+  const name  = document.getElementById('tech-name-input').value.trim();
+  const role  = document.getElementById('tech-role-input').value.trim();
   const color = document.getElementById('tech-color-input').value;
   if (!name) { showToast('Informe o nome', 'error'); return; }
-
-  if (editingTechId) {
-    const t = state.tecnicos.find(x => x.id === editingTechId);
-    t.name = name; t.role = role; t.color = color;
-  } else {
-    state.tecnicos.push({ id: Date.now(), name, role, color, active: true });
-  }
-  save();
-  closeModal('modal-tecnico');
-  renderTecnicos();
-  showToast('Técnico salvo!', 'success');
+  try {
+    if (editingTechId) {
+      await dbUpdateTecnico(editingTechId, { name, role, color });
+    } else {
+      await dbInsertTecnico({ name, role, color });
+    }
+    await dbLoad();
+    closeModal('modal-tecnico');
+    renderTecnicos();
+    showToast('Técnico salvo!', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
-function deleteTecnico(id) {
+async function deleteTecnico(id) {
   const hasEscalas = state.escalas.some(e => e.techId === id);
   if (hasEscalas && !confirm('Este técnico tem escalas. Deseja mesmo remover?')) return;
-  state.tecnicos = state.tecnicos.filter(t => t.id !== id);
-  save();
-  renderTecnicos();
-  showToast('Técnico removido', 'success');
+  try {
+    await dbDeleteTecnico(id);
+    await dbLoad();
+    renderTecnicos();
+    showToast('Técnico removido', 'success');
+  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
 }
 
 // ===================== RELATÓRIOS =====================
 function renderRelatorios() {
-  const yearSel = document.getElementById('rel-year');
+  const yearSel  = document.getElementById('rel-year');
   const monthSel = document.getElementById('rel-month');
-
-  // Populate years
-  const years = [...new Set(state.escalas.map(e => parseDate(e.date).getFullYear()))];
-  const curYear = new Date().getFullYear();
+  const years    = [...new Set(state.escalas.map(e => parseDate(e.date).getFullYear()))];
+  const curYear  = new Date().getFullYear();
   if (!years.includes(curYear)) years.push(curYear);
   years.sort((a,b) => b-a);
   const prevYear = yearSel.value;
   yearSel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
   if (prevYear && years.includes(parseInt(prevYear))) yearSel.value = prevYear;
 
-  const selYear = parseInt(yearSel.value) || curYear;
+  const selYear  = parseInt(yearSel.value) || curYear;
   const selMonth = monthSel.value !== '' ? parseInt(monthSel.value) : null;
-
   const filtered = state.escalas.filter(e => {
     const d = parseDate(e.date);
     if (d.getFullYear() !== selYear) return false;
@@ -1152,20 +1224,17 @@ function renderRelatorios() {
     return true;
   });
 
-  // Per tech
   const counts = {};
   state.tecnicos.forEach(t => { counts[t.id] = 0; });
   filtered.forEach(e => { if (counts[e.techId] !== undefined) counts[e.techId]++; else counts[e.techId] = 1; });
 
   const labels = state.tecnicos.map(t => t.name);
-  const data = state.tecnicos.map(t => counts[t.id] || 0);
+  const data   = state.tecnicos.map(t => counts[t.id] || 0);
   const colors = state.tecnicos.map(t => t.color);
-  const total = data.reduce((a,b) => a+b, 0);
+  const total  = data.reduce((a,b) => a+b, 0);
 
-  // Bar chart
   if (chartBar) chartBar.destroy();
-  const ctxBar = document.getElementById('chart-bar').getContext('2d');
-  chartBar = new Chart(ctxBar, {
+  chartBar = new Chart(document.getElementById('chart-bar').getContext('2d'), {
     type: 'bar',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
     options: {
@@ -1178,14 +1247,11 @@ function renderRelatorios() {
     }
   });
 
-  // Pie chart
   renderPieChart('chart-pie', filtered, 'chartPie');
 
-  // Table
-  const tbody = document.getElementById('rel-tbody');
-  tbody.innerHTML = state.tecnicos.map(t => {
-    const cnt = counts[t.id] || 0;
-    const pct = total > 0 ? ((cnt / total) * 100).toFixed(1) : '0.0';
+  document.getElementById('rel-tbody').innerHTML = state.tecnicos.map(t => {
+    const cnt  = counts[t.id] || 0;
+    const pct  = total > 0 ? ((cnt / total) * 100).toFixed(1) : '0.0';
     const trocas = state.trocas.filter(tr => {
       const fromEsc = state.escalas.find(e => e.id === tr.fromEscalaId);
       return fromEsc && fromEsc.techId === t.id;
@@ -1211,51 +1277,36 @@ function renderPieChart(canvasId, escalas, chartRef) {
   const counts = {};
   state.tecnicos.forEach(t => { counts[t.id] = 0; });
   escalas.forEach(e => { if (counts[e.techId] !== undefined) counts[e.techId]++; });
-  const labels = state.tecnicos.map(t => t.name);
-  const data = state.tecnicos.map(t => counts[t.id] || 0);
-  const colors = state.tecnicos.map(t => t.color);
   const ctx = document.getElementById(canvasId).getContext('2d');
   if (window[chartRef]) window[chartRef].destroy();
   window[chartRef] = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+    data: {
+      labels: state.tecnicos.map(t => t.name),
+      datasets: [{ data: state.tecnicos.map(t => counts[t.id] || 0), backgroundColor: state.tecnicos.map(t => t.color), borderWidth: 0 }]
+    },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: {
-        legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16, font: { size: 12 } } }
-      }
+      plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16, font: { size: 12 } } } }
     }
   });
 }
 
 // ===================== EXPORT =====================
 function exportExcel() {
-  const sorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  const ws_data = [['Data', 'Dia da Semana', 'Técnico', 'Função', 'Observações']];
+  const sorted   = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
+  const ws_data  = [['Data', 'Dia da Semana', 'Técnico', 'Função', 'Observações']];
   sorted.forEach(e => {
     const t = techById(e.techId);
-    const d = parseDate(e.date);
-    ws_data.push([
-      fmtBR(e.date),
-      d.toLocaleDateString('pt-BR', { weekday: 'long' }),
-      t ? t.name : '—',
-      t ? (t.role || 'Técnico') : '—',
-      e.obs || ''
-    ]);
+    ws_data.push([fmtBR(e.date), parseDate(e.date).toLocaleDateString('pt-BR', { weekday: 'long' }), t ? t.name : '—', t ? (t.role || 'Técnico') : '—', e.obs || '']);
   });
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
   ws['!cols'] = [{ wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
   XLSX.utils.book_append_sheet(wb, ws, 'Escalas NSI');
-
-  // Técnicos sheet
   const ws2_data = [['Nome', 'Função', 'Total Sábados']];
-  state.tecnicos.forEach(t => {
-    ws2_data.push([t.name, t.role || 'Técnico', state.escalas.filter(e => e.techId === t.id).length]);
-  });
-  const ws2 = XLSX.utils.aoa_to_sheet(ws2_data);
-  XLSX.utils.book_append_sheet(wb, ws2, 'Técnicos');
-
+  state.tecnicos.forEach(t => { ws2_data.push([t.name, t.role || 'Técnico', state.escalas.filter(e => e.techId === t.id).length]); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws2_data), 'Técnicos');
   XLSX.writeFile(wb, `Escalas_NSI_${new Date().toISOString().split('T')[0]}.xlsx`);
   showToast('Excel exportado!', 'success');
 }
@@ -1264,7 +1315,6 @@ function exportTXT() {
   const sorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
   let txt = '=== ESCALAS DE SÁBADO — NSI UNA ===\n';
   txt += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-
   const byMonth = {};
   sorted.forEach(e => {
     const d = parseDate(e.date);
@@ -1272,38 +1322,24 @@ function exportTXT() {
     if (!byMonth[key]) byMonth[key] = [];
     byMonth[key].push(e);
   });
-
   Object.entries(byMonth).forEach(([key, escalas]) => {
     const [y, m] = key.split('-');
-    const monthName = new Date(y, parseInt(m)-1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    txt += `\n--- ${monthName.toUpperCase()} ---\n`;
+    txt += `\n--- ${new Date(y, parseInt(m)-1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()} ---\n`;
     escalas.forEach(e => {
       const t = techById(e.techId);
       txt += `  ${fmtBR(e.date)}  |  ${(t ? t.name : '—').padEnd(20)}  ${e.obs ? '| ' + e.obs : ''}\n`;
     });
   });
-
   txt += '\n=== RESUMO POR TÉCNICO ===\n';
   state.tecnicos.forEach(t => {
-    const cnt = state.escalas.filter(e => e.techId === t.id).length;
-    txt += `  ${t.name.padEnd(20)} ${cnt} sábado(s)\n`;
+    txt += `  ${t.name.padEnd(20)} ${state.escalas.filter(e => e.techId === t.id).length} sábado(s)\n`;
   });
-
   const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `Escalas_NSI_${new Date().toISOString().split('T')[0]}.txt`;
   a.click();
   showToast('TXT exportado!', 'success');
-}
-
-// ===================== UTILS =====================
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // Click outside modal closes it
@@ -1313,9 +1349,38 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
+// ===================== LIVE CLOCK =====================
+function updateClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateShort = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+  const dateFull  = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+  const el = document.getElementById('live-clock');
+  const el2 = document.getElementById('live-date');
+  const mClock = document.getElementById('mobile-clock');
+  const mDate  = document.getElementById('mobile-date');
+  const dashSub = document.getElementById('dash-date-sub');
+
+  if (el)     el.textContent     = time;
+  if (el2)    el2.textContent    = dateShort;
+  if (mClock) mClock.textContent = time;
+  if (mDate)  mDate.textContent  = dateShort;
+  if (dashSub) dashSub.textContent = dateFull + ' · ' + time;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
 // ===================== INIT =====================
-load();
-renderDashboard();
+async function init() {
+  if (!isConfigured) {
+    document.getElementById('setup-screen').style.display = 'flex';
+    return;
+  }
+  await dbLoad();
+  renderDashboard();
+}
+init();
 </script>
 </body>
 </html>
