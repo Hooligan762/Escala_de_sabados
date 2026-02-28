@@ -9,286 +9,315 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface2: #1c2333;
-  --border: #30363d;
-  --accent: #00d4aa;
-  --accent2: #0ea5e9;
-  --accent3: #f59e0b;
-  --text: #e6edf3;
-  --text2: #8b949e;
-  --text3: #6e7681;
-  --danger: #f85149;
-  --success: #3fb950;
-  --radius: 10px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --bg:#0d1117; --surface:#161b22; --surface2:#1c2333; --surface3:#21262d;
+  --border:#30363d; --border2:#21262d;
+  --accent:#00d4aa; --accent2:#0ea5e9; --accent3:#f59e0b;
+  --text:#e6edf3; --text2:#8b949e; --text3:#6e7681;
+  --danger:#f85149; --success:#3fb950;
+  --folga:#8b949e; --feriado:#f97316; --todos:#a855f7;
+  --gestor:#fbbf24;
+  --radius:10px; --shadow:0 8px 32px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);z-index:100}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);z-index:200}
 
-/* LAYOUT */
+/* ── LOGIN ── */
+#login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:998;align-items:center;justify-content:center;padding:24px}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:40px 36px;width:100%;max-width:400px;box-shadow:var(--shadow)}
+.login-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text);margin-bottom:4px}
+.login-logo span{color:var(--accent)}
+.login-sub{font-size:13px;color:var(--text3);margin-bottom:32px}
+.pin-display{display:flex;gap:10px;justify-content:center;margin:20px 0}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);border:2px solid var(--border);transition:all .2s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.pin-key{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:18px;font-weight:700;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text);text-align:center;transition:all .15s;user-select:none}
+.pin-key:hover{background:var(--border);transform:scale(1.04)}
+.pin-key:active{transform:scale(.97)}
+.pin-key.del{color:var(--danger);font-size:14px}
+.pin-key.zero{grid-column:2}
+.pin-error{text-align:center;color:var(--danger);font-size:13px;min-height:18px;margin-top:8px}
+.user-select{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.user-option{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;cursor:pointer;transition:all .15s}
+.user-option:hover{border-color:var(--accent);background:rgba(0,212,170,.06)}
+.user-option.selected{border-color:var(--accent);background:rgba(0,212,170,.1)}
+.user-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+
+/* ── LAYOUT ── */
 .app{display:flex;min-height:100vh}
-.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:50}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:50;overflow-y:auto}
 .main{margin-left:240px;flex:1;padding:32px;min-height:100vh}
 
-/* SIDEBAR */
-.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border)}
-.logo-tag{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
-.logo-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1}
-.logo-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.nav{padding:16px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--text2);font-size:14px;font-weight:500;transition:all .15s;border-left:2px solid transparent}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
-.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,170,0.06)}
-.nav-item svg{width:16px;height:16px;flex-shrink:0}
-.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
-.version{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-tag{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:3px}
+.logo-title{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--text);line-height:1}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.nav{padding:12px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--text2);font-size:13.5px;font-weight:500;transition:all .15s;border-left:2px solid transparent;position:relative}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,170,.06)}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;margin-left:auto}
+.nav-badge.orange{background:var(--feriado)}
+.sidebar-user{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-user-avatar{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.sidebar-user-name{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar-user-role{font-size:10px;color:var(--text3)}
+.sidebar-footer{padding:10px 20px;border-top:1px solid var(--border2)}
 
-/* HEADER */
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.page-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text)}
-.page-sub{font-size:13px;color:var(--text3);margin-top:3px}
-.header-actions{display:flex;gap:10px}
+/* ── HEADER ── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text)}
+.page-sub{font-size:12px;color:var(--text3);margin-top:3px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--radius);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
 .btn-primary{background:var(--accent);color:#0d1117}
 .btn-primary:hover{background:#00eabb;transform:translateY(-1px)}
 .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .btn-secondary:hover{background:var(--border)}
-.btn-danger{background:rgba(248,81,73,0.12);color:var(--danger);border:1px solid rgba(248,81,73,0.2)}
-.btn-danger:hover{background:rgba(248,81,73,0.2)}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn svg{width:14px;height:14px}
+.btn-danger{background:rgba(248,81,73,.12);color:var(--danger);border:1px solid rgba(248,81,73,.2)}
+.btn-danger:hover{background:rgba(248,81,73,.22)}
+.btn-success{background:rgba(63,185,80,.12);color:var(--success);border:1px solid rgba(63,185,80,.2)}
+.btn-success:hover{background:rgba(63,185,80,.22)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn svg{width:13px;height:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
-/* CARDS */
+/* ── CARDS ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 
-/* STATS */
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+/* ── STATS ── */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.stat-card.c1::before{background:var(--accent)}
-.stat-card.c2::before{background:var(--accent2)}
-.stat-card.c3::before{background:var(--accent3)}
-.stat-card.c4::before{background:#a855f7}
-.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px}
-.stat-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--text);line-height:1}
-.stat-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.stat-card.c1::before{background:var(--accent)}.stat-card.c2::before{background:var(--accent2)}
+.stat-card.c3::before{background:var(--accent3)}.stat-card.c4::before{background:#a855f7}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:7px}
+.stat-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
 
-/* CALENDAR */
-.cal-controls{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.cal-month{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);min-width:160px;text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;max-width:560px}
-.cal-day-header{text-align:center;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text3);padding:5px 2px;text-transform:uppercase}
-.cal-day{border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:default;position:relative;background:var(--surface2);border:1px solid var(--border);transition:all .15s;padding:3px 2px;height:52px}
-.cal-day.saturday{border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.04);cursor:pointer}
-.cal-day.saturday:hover{border-color:var(--accent);background:rgba(0,212,170,0.1);transform:scale(1.04)}
+/* ── TIPO BADGES ── */
+.tipo-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.tipo-normal{background:rgba(0,212,170,.12);color:var(--accent);border:1px solid rgba(0,212,170,.2)}
+.tipo-folga{background:rgba(139,148,158,.15);color:var(--folga);border:1px solid rgba(139,148,158,.2)}
+.tipo-feriado{background:rgba(249,115,22,.12);color:var(--feriado);border:1px solid rgba(249,115,22,.2)}
+.tipo-todos{background:rgba(168,85,247,.12);color:var(--todos);border:1px solid rgba(168,85,247,.2)}
+
+/* ── STATUS BADGES ── */
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.s-pendente{background:rgba(245,158,11,.15);color:var(--accent3)}
+.s-ag-gestor{background:rgba(249,115,22,.15);color:var(--feriado)}
+.s-aprovada{background:rgba(63,185,80,.15);color:var(--success)}
+.s-recusada{background:rgba(248,81,73,.15);color:var(--danger)}
+
+/* ── ALERTS ── */
+.alert-banner{border-radius:var(--radius);padding:13px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:11px;font-size:13px;line-height:1.5}
+.alert-banner.info{background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.22);color:#7dd3fc}
+.alert-banner.success{background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.22);color:#6ee7b7}
+.alert-banner.warn{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);color:#fcd34d}
+.alert-banner.danger{background:rgba(249,115,22,.09);border:1px solid rgba(249,115,22,.28);color:var(--feriado)}
+.alert-banner.todos{background:rgba(168,85,247,.09);border:1px solid rgba(168,85,247,.28);color:#d8b4fe}
+.alert-banner.gestor{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);color:var(--gestor)}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* ── NOTIFICAÇÕES PANEL ── */
+.notif-item{display:flex;gap:12px;padding:13px 14px;border-radius:9px;margin-bottom:6px;border:1px solid var(--border)}
+.notif-item.unread{background:rgba(0,212,170,.04);border-color:rgba(0,212,170,.15)}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
+.notif-dot.read{background:var(--text3)}
+
+/* ── CALENDAR ── */
+.cal-controls{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cal-month{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);min-width:150px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-hdr{text-align:center;font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--text3);padding:4px 2px;text-transform:uppercase}
+.cal-day{border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);transition:all .15s;padding:2px;height:50px}
+.cal-day.saturday{border-color:rgba(0,212,170,.3);background:rgba(0,212,170,.04);cursor:pointer}
+.cal-day.saturday:hover{border-color:var(--accent);transform:scale(1.04)}
+.cal-day.sat-folga{border-color:rgba(139,148,158,.3);background:rgba(139,148,158,.05);cursor:pointer}
+.cal-day.sat-feriado{border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.05);cursor:pointer}
+.cal-day.sat-todos{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.05);cursor:pointer}
 .cal-day.empty{background:transparent;border-color:transparent}
-.cal-day.other-month{opacity:0.25}
+.cal-day.other-month{opacity:.22}
 .cal-num{font-size:11px;font-weight:600;color:var(--text2);line-height:1}
-.cal-day.saturday .cal-num{color:var(--accent);font-size:12px;font-weight:700}
-.cal-tech-badge{font-size:8px;font-weight:700;color:#fff;padding:2px 5px;border-radius:20px;margin-top:2px;text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-sat-label{font-size:8px;color:var(--text3);margin-top:1px;opacity:.7}
+.cal-day.saturday .cal-num{color:var(--accent);font-weight:700}
+.cal-day.sat-folga .cal-num{color:var(--folga)}
+.cal-day.sat-feriado .cal-num{color:var(--feriado)}
+.cal-day.sat-todos .cal-num{color:var(--todos)}
+.cal-tech-badge{font-size:7px;font-weight:700;color:#fff;padding:2px 5px;border-radius:20px;margin-top:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-sat-label{font-size:7px;color:var(--text3);margin-top:1px;opacity:.7}
+.legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
 
-/* TECHNICIANS */
-.tech-list{display:flex;flex-direction:column;gap:8px}
-.tech-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
-.tech-color{width:14px;height:14px;border-radius:50%;flex-shrink:0}
-.tech-name{flex:1;font-size:14px;font-weight:500;color:var(--text)}
-.tech-count{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px 8px;background:var(--surface);border-radius:4px}
-.tech-actions{display:flex;gap:6px}
-
-/* FORM */
-.form-row{display:flex;gap:12px;margin-bottom:16px;align-items:flex-end}
-.form-group{display:flex;flex-direction:column;gap:6px;flex:1}
-.form-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
-.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
-.form-input:focus{border-color:var(--accent)}
-.form-input option{background:var(--surface2)}
-.color-input{height:38px;padding:2px;cursor:pointer;background:var(--surface2)}
-
-/* TABLE */
+/* ── TABLE ── */
 .table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse}
-thead th{background:var(--surface2);padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border)}
-tbody td{padding:11px 14px;border-bottom:1px solid rgba(48,54,61,0.5);font-size:13px;color:var(--text2);vertical-align:middle}
+thead th{background:var(--surface2);padding:9px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border)}
+tbody td{padding:10px 13px;border-bottom:1px solid rgba(48,54,61,.5);font-size:12.5px;color:var(--text2);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:rgba(255,255,255,0.02)}
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-green{background:rgba(63,185,80,0.15);color:var(--success)}
-.badge-yellow{background:rgba(245,158,11,0.15);color:var(--accent3)}
-.badge-red{background:rgba(248,81,73,0.15);color:var(--danger)}
-.badge-blue{background:rgba(14,165,233,0.15);color:var(--accent2)}
+tbody tr:hover{background:rgba(255,255,255,.02)}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:480px;max-width:calc(100vw - 32px);box-shadow:var(--shadow)}
-.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+/* ── FORM ── */
+.form-row{display:flex;gap:10px;margin-bottom:14px;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:5px;flex:1}
+.form-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
+.form-input:focus{border-color:var(--accent)}
+.form-input option{background:var(--surface2)}
+.color-input{height:36px;padding:2px;cursor:pointer}
+.tipo-selector{display:flex;gap:7px;flex-wrap:wrap}
+.tipo-btn{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
+.tipo-btn.active-normal{background:rgba(0,212,170,.15);color:var(--accent);border-color:rgba(0,212,170,.3)}
+.tipo-btn.active-folga{background:rgba(139,148,158,.15);color:var(--folga);border-color:rgba(139,148,158,.3)}
+.tipo-btn.active-feriado{background:rgba(249,115,22,.15);color:var(--feriado);border-color:rgba(249,115,22,.3)}
+.tipo-btn.active-todos{background:rgba(168,85,247,.15);color:var(--todos);border-color:rgba(168,85,247,.3)}
 
-/* TABS */
-.tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border-radius:var(--radius);padding:4px;border:1px solid var(--border)}
-.tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s}
-.tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.tab:hover:not(.active){color:var(--text)}
+/* ── AUDIT LOG ── */
+.audit-item{display:flex;align-items:flex-start;gap:12px;padding:11px 13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:6px}
+.audit-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.audit-meta{font-size:11px;color:var(--text3);margin-top:2px}
 
-/* SWAP */
-.swap-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px}
-.swap-dates{display:flex;align-items:center;gap:10px;flex:1}
-.swap-date{text-align:center}
-.swap-date-label{font-size:10px;color:var(--text3);margin-bottom:2px}
-.swap-date-val{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
-.swap-arrow{color:var(--text3)}
-.swap-tech{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)}
+/* ── TROCA CARD ── */
+.troca-card{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:10px}
+.troca-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.troca-dates{display:flex;align-items:center;gap:10px}
+.troca-date{text-align:center}
+.troca-date-label{font-size:9px;color:var(--text3);margin-bottom:2px}
+.troca-date-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.troca-tech{font-size:11px;margin-top:1px}
+.troca-arrow{color:var(--text3);padding:0 4px}
+.troca-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 
-/* CHART */
-.chart-container{position:relative;height:280px}
+/* ── RODIZIO ── */
+.rodizio-panel{background:linear-gradient(135deg,rgba(0,212,170,.05),rgba(14,165,233,.04));border:1px solid rgba(0,212,170,.18);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.rodizio-queue{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.rodizio-item{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700}
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:300;transform:translateY(80px);opacity:0;transition:all .3s}
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px;width:520px;max-width:calc(100vw - 28px);box-shadow:var(--shadow);max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:18px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 16px;font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:500;transform:translateY(80px);opacity:0;transition:all .3s;max-width:340px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{border-left:3px solid var(--success)}
 .toast.error{border-left:3px solid var(--danger)}
+.toast.info{border-left:3px solid var(--accent2)}
 
-/* PAGE */
-.page{display:none}
-.page.active{display:block}
+/* ── PAGE ── */
+.page{display:none}.page.active{display:block}
+.empty{text-align:center;padding:40px 24px;color:var(--text3)}
+.empty svg{width:36px;height:36px;opacity:.25;margin:0 auto 10px;display:block}
+.empty p{font-size:13px}
 
-/* EMPTY */
-.empty{text-align:center;padding:48px 24px;color:var(--text3)}
-.empty svg{width:40px;height:40px;opacity:.3;margin:0 auto 12px;display:block}
-.empty p{font-size:14px}
-
-/* SCROLL */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
-/* MOBILE BOTTOM NAV */
+/* ── MOBILE HEADER ── */
+.mobile-header{display:none;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
+.mobile-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+.mobile-logo span{color:var(--accent)}
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;padding:0 4px;padding-bottom:env(safe-area-inset-bottom)}
 .bottom-nav-inner{display:flex;align-items:center;justify-content:space-around}
-.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.3px;flex:1;border:none;background:none;transition:color .15s}
-.bottom-nav-item svg{width:20px;height:20px}
+.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;cursor:pointer;color:var(--text3);font-size:9px;font-weight:600;letter-spacing:.3px;flex:1;border:none;background:none;transition:color .15s;position:relative}
+.bottom-nav-item svg{width:19px;height:19px}
 .bottom-nav-item.active{color:var(--accent)}
+.bnav-badge{position:absolute;top:6px;right:calc(50% - 16px);background:var(--danger);color:#fff;font-size:8px;font-weight:700;padding:0 4px;border-radius:8px;min-width:14px;text-align:center}
 
-/* HAMBURGER / OVERLAY */
-.mobile-header{display:none;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
-.mobile-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
-.mobile-logo span{color:var(--accent)}
+#loading-overlay{display:none;position:fixed;inset:0;background:rgba(13,17,23,.87);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(4px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 
-/* TABLET — sidebar icon only */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .sidebar{width:64px}
-  .sidebar-logo{padding:16px 0;text-align:center}
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── TABLET ── */
+@media (max-width:1024px) and (min-width:769px){
+  .sidebar{width:60px}.sidebar-logo{padding:14px 0;text-align:center}
   .logo-tag,.logo-sub,.logo-title{display:none}
-  .sidebar-logo::after{content:'N';font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent);display:block}
-  .nav-item{padding:14px 0;justify-content:center}
-  .nav-item span,.nav-item-label{display:none}
-  .nav-item svg{width:20px;height:20px;margin:0}
-  .sidebar-footer{display:none}
-  .main{margin-left:64px;padding:20px}
+  .sidebar-logo::after{content:'N';font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--accent);display:block}
+  .nav-item{padding:13px 0;justify-content:center}.nav-item span{display:none}
+  .nav-item svg{width:19px;height:19px;margin:0}.sidebar-footer,.sidebar-user{display:none}
+  .main{margin-left:60px;padding:20px}
 }
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .sidebar{display:none}
-  .main{margin-left:0;padding:0;padding-bottom:70px}
-  .mobile-header{display:flex}
-  .bottom-nav{display:block}
-
-  .page-header{flex-direction:column;align-items:flex-start;gap:12px;padding:16px 16px 0}  .page-title{font-size:22px}
-  .header-actions{width:100%;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap}
-  .header-actions .btn{white-space:nowrap;flex-shrink:0}
-
-  .grid-4{grid-template-columns:1fr 1fr}
-  .grid-3{grid-template-columns:1fr 1fr}
-  .grid-2{grid-template-columns:1fr}
-
-  .card{border-radius:10px;margin:0 16px;padding:16px}
-  .page > .card{margin:12px 16px}
-  .page > .grid-2,.page > .grid-3,.page > .grid-4{padding:0 16px;gap:10px;margin-bottom:12px}
-  .page > div[style*="margin-bottom"]{padding:0 16px;margin-bottom:12px!important}
-
-  .stat-card{padding:14px}
-  .stat-val{font-size:26px}
-
-  .cal-month{font-size:16px;min-width:150px}
-  .cal-layout{grid-template-columns:1fr!important}
-  .cal-day{min-height:44px;padding:2px}
-  .cal-tech-badge{font-size:8px;padding:1px 4px}
-  .cal-day-header{font-size:9px;padding:6px 2px}
-
-  .chart-container{height:220px}
-
-  .tech-row{flex-wrap:wrap;gap:8px}
-  .tech-actions{width:100%;justify-content:flex-end}
-
-  .table-wrap{margin:0;border-radius:8px;font-size:12px}
-  thead th{padding:8px 10px;font-size:10px}
-  tbody td{padding:8px 10px;font-size:12px}
-
-  .swap-card{flex-wrap:wrap;gap:10px}
-  .swap-dates{width:100%}
-
-  .form-row{flex-direction:column}
-  .modal{padding:20px;border-radius:10px}
-  .modal-actions{flex-wrap:wrap}
-
-  .toast{bottom:80px;left:16px;right:16px;text-align:center}
-
-  .page-header + .card{margin-top:12px}
-}
-
-/* Small phones */
-@media (max-width: 380px) {
-  .grid-4{grid-template-columns:1fr}
-  .stat-val{font-size:22px}
-  .btn{padding:8px 12px;font-size:12px}
+/* ── MOBILE ── */
+@media (max-width:768px){
+  .sidebar{display:none}.main{margin-left:0;padding:0;padding-bottom:68px}
+  .mobile-header{display:flex}.bottom-nav{display:block}
+  .page-header{flex-direction:column;align-items:flex-start;gap:10px;padding:14px 14px 0}
+  .page-title{font-size:21px}.header-actions{width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .grid-4{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}
+  .card{margin:0 14px;padding:14px}.page>.card{margin:10px 14px}
+  .page>.grid-2,.page>.grid-3,.page>.grid-4{padding:0 14px;gap:8px;margin-bottom:10px}
+  .stat-val{font-size:24px}.form-row{flex-direction:column}
+  .modal{padding:18px;border-radius:10px}.toast{bottom:76px;left:14px;right:14px;text-align:center}
 }
 </style>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
-<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,17,23,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(4px)">
-  <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
-  <div style="font-size:13px;color:var(--text3)">Sincronizando com Supabase...</div>
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div style="font-size:12px;color:var(--text3)">Sincronizando...</div>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
-<!-- SETUP SCREEN -->
-<div id="setup-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:998;align-items:center;justify-content:center;padding:24px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;max-width:520px;width:100%">
-    <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:6px">Configurar Supabase</div>
-    <div style="font-size:14px;color:var(--text3);margin-bottom:28px;line-height:1.6">Para usar o sistema com dados compartilhados entre toda a equipe, preencha suas credenciais do Supabase abaixo e salve o arquivo.</div>
-    <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:24px;border:1px solid var(--border)">
-      <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Passo a passo</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.9">
-        1. Acesse <strong style="color:var(--accent)">supabase.com</strong> e crie um projeto gratuito<br>
-        2. Vá em <strong>SQL Editor</strong> e execute o arquivo <strong>schema_supabase.sql</strong><br>
-        3. Vá em <strong>Settings → API</strong> e copie a URL e a anon key<br>
-        4. Abra este arquivo HTML em um editor de texto<br>
-        5. Substitua <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">https://tsxnwulbwtrawhjaswcw.supabase.co</code> e <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">sb_publishable_z6FkNvbQB9opjfrwT8NxhQ_6tAB6pkL</code><br>
-        6. Salve e reabra — todos os colegas verão os mesmos dados!
-      </div>
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Escalas <span>NSI</span></div>
+    <div class="login-sub">Sistema de Plantões · UNA</div>
+    <div id="login-step-user">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px">Quem está acessando?</div>
+      <div class="user-select" id="user-select-list"></div>
     </div>
-    <div style="font-size:12px;color:var(--text3);text-align:center">O Supabase é gratuito para projetos pequenos e não expira.</div>
+    <div id="login-step-pin" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <button class="btn btn-secondary btn-sm" onclick="backToUserSelect()">← Voltar</button>
+        <span id="login-selected-name" style="font-size:14px;font-weight:600;color:var(--text)"></span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:6px">Digite seu PIN</div>
+      <div class="pin-display" id="pin-display">
+        <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <div class="pin-key" onclick="pinPress('1')">1</div>
+        <div class="pin-key" onclick="pinPress('2')">2</div>
+        <div class="pin-key" onclick="pinPress('3')">3</div>
+        <div class="pin-key" onclick="pinPress('4')">4</div>
+        <div class="pin-key" onclick="pinPress('5')">5</div>
+        <div class="pin-key" onclick="pinPress('6')">6</div>
+        <div class="pin-key" onclick="pinPress('7')">7</div>
+        <div class="pin-key" onclick="pinPress('8')">8</div>
+        <div class="pin-key" onclick="pinPress('9')">9</div>
+        <div class="pin-key del" onclick="pinDel()">⌫</div>
+        <div class="pin-key zero" onclick="pinPress('0')">0</div>
+      </div>
+      <div class="pin-error" id="pin-error"></div>
+    </div>
   </div>
 </div>
 
 <!-- MOBILE HEADER -->
 <header class="mobile-header">
   <div class="mobile-logo">Escalas <span>NSI</span></div>
-  <div style="text-align:right">
-    <div style="font-size:13px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace" id="mobile-clock"></div>
-    <div style="font-size:10px;color:var(--text3)" id="mobile-date"></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="mob-notif-btn" onclick="navigate('notificacoes')" style="position:relative;cursor:pointer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" style="width:20px;height:20px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span id="mob-notif-count" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:8px;font-weight:700;padding:0 4px;border-radius:8px;min-width:14px;text-align:center"></span>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:12px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace" id="mobile-clock"></div>
+    </div>
   </div>
 </header>
 
@@ -303,33 +332,57 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
   <nav class="nav">
     <div class="nav-item active" onclick="navigate('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard
+      <span>Dashboard</span>
     </div>
     <div class="nav-item" onclick="navigate('calendar')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendário
+      <span>Calendário</span>
     </div>
     <div class="nav-item" onclick="navigate('escalas')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
-      Escalas
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      <span>Escalas</span>
     </div>
     <div class="nav-item" onclick="navigate('trocas')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-      Trocas
+      <span>Trocas</span>
+      <span class="nav-badge" id="nav-badge-trocas" style="display:none">0</span>
+    </div>
+    <div class="nav-item" onclick="navigate('notificacoes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>Notificações</span>
+      <span class="nav-badge" id="nav-badge-notif" style="display:none">0</span>
     </div>
     <div class="nav-item" onclick="navigate('tecnicos')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Técnicos
+      <span>Técnicos</span>
+    </div>
+    <div class="nav-item" id="nav-auditoria" onclick="navigate('auditoria')" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span>Auditoria</span>
+    </div>
+    <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><line x1="20" y1="11" x2="20" y2="17"/><line x1="17" y1="14" x2="23" y2="14"/></svg>
+      <span>Usuários</span>
     </div>
     <div class="nav-item" onclick="navigate('relatorios')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Relatórios
+      <span>Relatórios</span>
     </div>
   </nav>
+  <div class="sidebar-user" id="sidebar-user-info">
+    <div class="sidebar-user-avatar" id="sidebar-avatar"></div>
+    <div style="flex:1;min-width:0">
+      <div class="sidebar-user-name" id="sidebar-uname">—</div>
+      <div class="sidebar-user-role" id="sidebar-urole">—</div>
+    </div>
+    <button onclick="logout()" title="Sair" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Sair">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
   <div class="sidebar-footer">
-    <div class="version" id="live-clock" style="font-size:13px;color:var(--text2);font-weight:600"></div>
-    <div class="version" id="live-date" style="margin-top:3px"></div>
-    <div class="version" style="margin-top:4px">v1.0 · NSI UNA</div>
+    <div style="font-size:12px;color:var(--text2);font-weight:600;font-family:'DM Mono',monospace" id="live-clock"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace" id="live-date"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:3px">v3.0 · NSI UNA</div>
   </div>
 </aside>
 
@@ -339,190 +392,198 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
 <!-- DASHBOARD -->
 <div class="page active" id="page-dashboard">
   <div class="page-header">
-    <div>
-      <div class="page-title">Dashboard</div>
-      <div class="page-sub" id="dash-date-sub"></div>
-    </div>
+    <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date-sub"></div></div>
     <div class="header-actions">
-      <button class="btn btn-secondary" onclick="exportExcel()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar Excel
-      </button>
-      <button class="btn btn-secondary" onclick="exportTXT()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Exportar TXT
-      </button>
+      <button class="btn btn-secondary" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel</button>
+      <button class="btn btn-secondary" onclick="exportTXT()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>TXT</button>
     </div>
   </div>
-  <div class="grid-4" style="margin-bottom:20px" id="stats-grid"></div>
+  <div id="dash-alerts" style="margin-bottom:14px"></div>
+  <div class="grid-4" style="margin-bottom:18px" id="stats-grid"></div>
   <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Próximos Sábados</div>
-      </div>
-      <div id="next-saturdays"></div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Distribuição do Mês</div>
-      </div>
-      <div class="chart-container"><canvas id="chart-dash"></canvas></div>
-    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Próximos Sábados</div></div><div id="next-saturdays"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">Distribuição do Mês</div></div><div style="position:relative;height:260px"><canvas id="chart-dash"></canvas></div></div>
   </div>
 </div>
 
 <!-- CALENDAR -->
 <div class="page" id="page-calendar">
   <div class="page-header">
-    <div>
-      <div class="page-title">Calendário</div>
-      <div class="page-sub">Clique em um sábado para atribuir técnico</div>
+    <div><div class="page-title">Calendário</div><div class="page-sub">Clique em qualquer sábado para configurar</div></div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openRodizioModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Rodízio
+      </button>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start" class="cal-layout">
-    <div class="card" style="padding:16px;width:fit-content">
+  <div id="cal-rodizio-status" style="margin-bottom:12px"></div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start" class="cal-layout">
+    <div class="card" style="padding:14px;width:fit-content">
       <div class="cal-controls">
-        <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
+        <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="cal-month" id="cal-month-label"></div>
-        <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+        <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)" id="cal-legend"></div>
+      <div class="legend-row">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(0,212,170,.4);border:1px solid var(--accent)"></div>Normal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(139,148,158,.3);border:1px solid var(--folga)"></div>Folga</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(249,115,22,.25);border:1px solid var(--feriado)"></div>Feriado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(168,85,247,.25);border:1px solid var(--todos)"></div>Todos</div>
+      </div>
     </div>
-    <div class="card" style="padding:16px">
-      <div class="card-title" style="margin-bottom:12px;font-size:12px">Sábados do Mês</div>
-      <div id="cal-sidebar-list"></div>
-    </div>
+    <div class="card" style="padding:14px"><div class="card-title" style="margin-bottom:10px;font-size:11px">Sábados do Mês</div><div id="cal-sidebar-list"></div></div>
   </div>
 </div>
 
 <!-- ESCALAS -->
 <div class="page" id="page-escalas">
   <div class="page-header">
-    <div>
-      <div class="page-title">Escalas</div>
-      <div class="page-sub">Lista completa de plantões por sábado</div>
-    </div>
-    <button class="btn btn-primary" onclick="openAddEscala()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nova Escala
-    </button>
+    <div><div class="page-title">Escalas</div><div class="page-sub">Plantões cadastrados</div></div>
+    <button class="btn btn-primary" onclick="openAddEscala()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova Escala</button>
   </div>
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Dia da Semana</th>
-            <th>Técnico</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="escala-tbody"></tbody>
-      </table>
-    </div>
-  </div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Data</th><th>Tipo</th><th>Técnico</th><th>Status</th><th>Ações</th></tr></thead>
+    <tbody id="escala-tbody"></tbody>
+  </table></div></div>
 </div>
 
 <!-- TROCAS -->
 <div class="page" id="page-trocas">
   <div class="page-header">
-    <div>
-      <div class="page-title">Trocas</div>
-      <div class="page-sub">Registro de trocas de plantão</div>
-    </div>
-    <button class="btn btn-primary" onclick="openAddTroca()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nova Troca
-    </button>
+    <div><div class="page-title">Trocas</div><div class="page-sub">Solicitações de troca de plantão</div></div>
+    <button class="btn btn-primary" onclick="openAddTroca()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Solicitar Troca</button>
   </div>
   <div id="trocas-list"></div>
+</div>
+
+<!-- NOTIFICAÇÕES -->
+<div class="page" id="page-notificacoes">
+  <div class="page-header"><div><div class="page-title">Notificações</div><div class="page-sub">Alertas e aprovações pendentes</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="marcarTodasLidas()">Marcar todas como lidas</button>
+  </div>
+  <div id="notif-list"></div>
 </div>
 
 <!-- TÉCNICOS -->
 <div class="page" id="page-tecnicos">
   <div class="page-header">
-    <div>
-      <div class="page-title">Técnicos</div>
-      <div class="page-sub">Gerencie a equipe do setor NSI</div>
+    <div><div class="page-title">Técnicos</div><div class="page-sub">Equipe e ordem do rodízio</div></div>
+    <button class="btn btn-primary" onclick="openAddTecnico()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Técnico</button>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header"><div class="card-title">Ordem do Rodízio</div><button class="btn btn-secondary btn-sm" onclick="openRodizioModal()">Configurar</button></div>
+    <div id="rodizio-queue-preview"></div>
+  </div>
+  <div class="card"><div class="tech-list" id="tech-list" style="display:flex;flex-direction:column;gap:8px"></div></div>
+</div>
+
+<!-- AUDITORIA (gestor) -->
+<div class="page" id="page-auditoria">
+  <div class="page-header"><div><div class="page-title">Auditoria</div><div class="page-sub">Histórico completo de alterações</div></div>
+    <div class="header-actions">
+      <select class="form-input btn-sm" id="audit-filter" onchange="renderAuditoria()" style="width:160px;padding:7px 11px">
+        <option value="">Todas as ações</option>
+        <option value="ESCALA">Escalas</option>
+        <option value="TROCA">Trocas</option>
+        <option value="TECNICO">Técnicos</option>
+        <option value="USUARIO">Usuários</option>
+      </select>
     </div>
-    <button class="btn btn-primary" onclick="openAddTecnico()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Novo Técnico
-    </button>
   </div>
-  <div class="card">
-    <div class="tech-list" id="tech-list"></div>
+  <div id="audit-list"></div>
+</div>
+
+<!-- USUÁRIOS (gestor) -->
+<div class="page" id="page-usuarios">
+  <div class="page-header"><div><div class="page-title">Usuários</div><div class="page-sub">Gerenciar acessos ao sistema</div></div>
+    <button class="btn btn-primary" onclick="openAddUsuario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Usuário</button>
   </div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Nome</th><th>Perfil</th><th>Técnico Vinculado</th><th>Ações</th></tr></thead>
+    <tbody id="usuarios-tbody"></tbody>
+  </table></div></div>
 </div>
 
 <!-- RELATÓRIOS -->
 <div class="page" id="page-relatorios">
   <div class="page-header">
-    <div>
-      <div class="page-title">Relatórios</div>
-      <div class="page-sub">Análise e distribuição das escalas</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <select class="form-input" id="rel-year" onchange="renderRelatorios()" style="width:100px">
-      </select>
-      <select class="form-input" id="rel-month" onchange="renderRelatorios()" style="width:140px">
-        <option value="">Todos os meses</option>
-        <option value="0">Janeiro</option><option value="1">Fevereiro</option>
-        <option value="2">Março</option><option value="3">Abril</option>
-        <option value="4">Maio</option><option value="5">Junho</option>
-        <option value="6">Julho</option><option value="7">Agosto</option>
-        <option value="8">Setembro</option><option value="9">Outubro</option>
-        <option value="10">Novembro</option><option value="11">Dezembro</option>
+    <div><div class="page-title">Relatórios</div><div class="page-sub">Análise de distribuição</div></div>
+    <div style="display:flex;gap:7px">
+      <select class="form-input" id="rel-year" onchange="renderRelatorios()" style="width:95px"></select>
+      <select class="form-input" id="rel-month" onchange="renderRelatorios()" style="width:135px">
+        <option value="">Todos</option>
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+        <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
     </div>
   </div>
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="card">
-      <div class="card-header"><div class="card-title">Plantões por Técnico</div></div>
-      <div class="chart-container"><canvas id="chart-bar"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">Distribuição Percentual</div></div>
-      <div class="chart-container"><canvas id="chart-pie"></canvas></div>
-    </div>
+  <div class="grid-2" style="margin-bottom:18px">
+    <div class="card"><div class="card-header"><div class="card-title">Plantões por Técnico</div></div><div style="position:relative;height:260px"><canvas id="chart-bar"></canvas></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">Distribuição %</div></div><div style="position:relative;height:260px"><canvas id="chart-pie"></canvas></div></div>
   </div>
-  <div class="card">
-    <div class="card-header"><div class="card-title">Resumo por Técnico</div></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Técnico</th><th>Sábados Escalados</th><th>Trocas Realizadas</th><th>% do Total</th></tr></thead>
-        <tbody id="rel-tbody"></tbody>
-      </table>
-    </div>
+  <div class="card"><div class="card-header"><div class="card-title">Resumo por Técnico</div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Técnico</th><th>Sábados</th><th>Trocas</th><th>% Total</th></tr></thead>
+      <tbody id="rel-tbody"></tbody>
+    </table></div>
   </div>
 </div>
 
-</main>
-</div>
+</main></div>
 
-<!-- MODAL ADD ESCALA -->
-<div class="modal-overlay" id="modal-escala" style="display:none">
+<!-- MODALS -->
+
+<!-- MODAL ASSIGN -->
+<div class="modal-overlay" id="modal-assign" style="display:none">
   <div class="modal">
-    <div class="modal-title" id="modal-escala-title">Nova Escala de Sábado</div>
+    <div class="modal-title" id="modal-assign-title">Configurar Sábado</div>
+    <p style="color:var(--text3);font-size:12px;margin-bottom:14px" id="modal-assign-date"></p>
     <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Data (Sábado)</label>
-      <input type="date" class="form-input" id="esc-date">
+      <label class="form-label">Tipo do Sábado</label>
+      <div class="tipo-selector" id="assign-tipo-selector">
+        <button class="tipo-btn active-normal" onclick="selectTipo('normal',this)">🟢 Normal</button>
+        <button class="tipo-btn" onclick="selectTipo('folga',this)">⚫ Folga</button>
+        <button class="tipo-btn" onclick="selectTipo('feriado',this)">🟠 Feriado</button>
+        <button class="tipo-btn" onclick="selectTipo('todos',this)">🟣 Todos</button>
+      </div>
     </div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Técnico</label>
-      <select class="form-input" id="esc-tech"></select>
+    <div id="assign-tech-section">
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Técnico</label>
+        <select class="form-input" id="assign-tech"></select>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Observações</label>
-      <input type="text" class="form-input" id="esc-obs" placeholder="Opcional...">
+      <input type="text" class="form-input" id="assign-obs" placeholder="Opcional...">
     </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-assign')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="assign-remove-btn" onclick="removeEscalaByDate()" style="margin-right:auto;display:none">Remover</button>
+      <button class="btn btn-primary" onclick="saveAssign()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESCALA -->
+<div class="modal-overlay" id="modal-escala" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="modal-escala-title">Nova Escala</div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">Data (Sábado)</label><input type="date" class="form-input" id="esc-date"></div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Tipo</label>
+      <div class="tipo-selector" id="esc-tipo-selector">
+        <button class="tipo-btn active-normal" onclick="selectTipoEsc('normal',this)">🟢 Normal</button>
+        <button class="tipo-btn" onclick="selectTipoEsc('folga',this)">⚫ Folga</button>
+        <button class="tipo-btn" onclick="selectTipoEsc('feriado',this)">🟠 Feriado</button>
+        <button class="tipo-btn" onclick="selectTipoEsc('todos',this)">🟣 Todos</button>
+      </div>
+    </div>
+    <div id="esc-tech-section"><div class="form-group" style="margin-bottom:12px"><label class="form-label">Técnico</label><select class="form-input" id="esc-tech"></select></div></div>
+    <div class="form-group"><label class="form-label">Observações</label><input type="text" class="form-input" id="esc-obs" placeholder="Opcional..."></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-escala')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveEscala()">Salvar</button>
@@ -530,24 +591,16 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
   </div>
 </div>
 
-<!-- MODAL ADD TÉCNICO -->
+<!-- MODAL TÉCNICO -->
 <div class="modal-overlay" id="modal-tecnico" style="display:none">
   <div class="modal">
     <div class="modal-title" id="modal-tech-title">Novo Técnico</div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Nome completo</label>
-      <input type="text" class="form-input" id="tech-name-input" placeholder="Ex: Ismael Silva">
-    </div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">Nome</label><input type="text" class="form-input" id="tech-name-input" placeholder="Ex: Ismael Silva"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Função</label>
-        <input type="text" class="form-input" id="tech-role-input" placeholder="Ex: Técnico de TI">
-      </div>
-      <div class="form-group" style="max-width:100px">
-        <label class="form-label">Cor</label>
-        <input type="color" class="form-input color-input" id="tech-color-input" value="#00d4aa">
-      </div>
+      <div class="form-group"><label class="form-label">Função</label><input type="text" class="form-input" id="tech-role-input" placeholder="Ex: Técnico de TI"></div>
+      <div class="form-group" style="max-width:90px"><label class="form-label">Cor</label><input type="color" class="form-input color-input" id="tech-color-input" value="#00d4aa"></div>
     </div>
+    <div class="form-group"><label class="form-label">Ordem no Rodízio</label><input type="number" class="form-input" id="tech-ordem-input" min="1" max="99" placeholder="Ex: 1"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-tecnico')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveTecnico()">Salvar</button>
@@ -558,827 +611,1140 @@ tbody tr:hover{background:rgba(255,255,255,0.02)}
 <!-- MODAL TROCA -->
 <div class="modal-overlay" id="modal-troca" style="display:none">
   <div class="modal">
-    <div class="modal-title">Registrar Troca</div>
-    <div class="grid-2" style="margin-bottom:14px">
-      <div class="form-group">
-        <label class="form-label">Data original</label>
-        <select class="form-input" id="troca-from"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Trocar com (data)</label>
-        <select class="form-input" id="troca-to"></select>
-      </div>
+    <div class="modal-title">Solicitar Troca de Plantão</div>
+    <div style="background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.2);border-radius:8px;padding:11px 13px;font-size:12px;color:#7dd3fc;margin-bottom:16px">
+      ℹ️ A troca precisa ser <strong>aprovada pelo técnico afetado</strong>. Em caso de recusa, o gestor será notificado automaticamente.
     </div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Motivo</label>
-      <input type="text" class="form-input" id="troca-motivo" placeholder="Ex: Compromisso pessoal">
+    <div class="grid-2" style="margin-bottom:12px">
+      <div class="form-group"><label class="form-label">Data original</label><select class="form-input" id="troca-from"></select></div>
+      <div class="form-group"><label class="form-label">Trocar com (data)</label><select class="form-input" id="troca-to"></select></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Status</label>
-      <select class="form-input" id="troca-status">
-        <option value="pendente">Pendente</option>
-        <option value="aprovada">Aprovada</option>
-        <option value="recusada">Recusada</option>
-      </select>
-    </div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">Motivo</label><input type="text" class="form-input" id="troca-motivo" placeholder="Ex: Compromisso pessoal..."></div>
+    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Técnico que deve aprovar</label><select class="form-input" id="troca-aprovador"></select></div>
+    <div id="troca-aprovador-hint" style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px">Selecione quem será afetado pela troca e precisa confirmar</div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-troca')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveTroca()">Registrar</button>
+      <button class="btn btn-primary" onclick="saveTroca()">Enviar Solicitação</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL CALENDAR ASSIGN -->
-<div class="modal-overlay" id="modal-assign" style="display:none">
+<!-- MODAL RESPOSTA TROCA (aprovar/recusar) -->
+<div class="modal-overlay" id="modal-resposta-troca" style="display:none">
   <div class="modal">
-    <div class="modal-title" id="modal-assign-title">Atribuir Técnico</div>
-    <p style="color:var(--text3);font-size:13px;margin-bottom:16px" id="modal-assign-date"></p>
-    <div class="form-group">
-      <label class="form-label">Técnico</label>
-      <select class="form-input" id="assign-tech"></select>
+    <div class="modal-title" id="modal-resp-title">Responder Solicitação de Troca</div>
+    <div id="modal-resp-detail" style="background:var(--surface2);border-radius:8px;padding:13px;margin-bottom:16px;font-size:13px;color:var(--text2)"></div>
+    <div class="form-group"><label class="form-label">Observação (opcional)</label><input type="text" class="form-input" id="resp-motivo" placeholder="Ex: Posso sim, sem problema..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-resposta-troca')">Fechar</button>
+      <button class="btn btn-danger" onclick="responderTroca('recusada')">✗ Recusar</button>
+      <button class="btn btn-success" onclick="responderTroca('aprovada')">✓ Aprovar</button>
     </div>
-    <div class="form-group" style="margin-top:12px">
-      <label class="form-label">Observações</label>
-      <input type="text" class="form-input" id="assign-obs" placeholder="Opcional...">
+  </div>
+</div>
+
+<!-- MODAL RODÍZIO -->
+<div class="modal-overlay" id="modal-rodizio" style="display:none">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">⚙️ Rodízio Automático</div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.7">Gera automaticamente as escalas dos próximos sábados sem técnico (tipo Normal), na ordem definida. Sábados de Folga, Feriado ou Todos Juntos são pulados.</p>
+    <div class="form-row" style="margin-bottom:14px">
+      <div class="form-group"><label class="form-label">Qtd. de sábados</label><input type="number" class="form-input" id="rodizio-qtd" value="12" min="1" max="52" style="width:110px"></div>
+      <div class="form-group"><label class="form-label">Iniciar pelo técnico</label><select class="form-input" id="rodizio-start-tech"></select></div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Ordem (arraste para reordenar)</div>
+      <div id="rodizio-order-list" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+    <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#fcd34d">
+      ⚠️ Apenas sábados futuros sem técnico serão preenchidos. Escalas existentes não serão alteradas.
     </div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-assign')">Cancelar</button>
-      <button class="btn btn-danger btn-sm" id="assign-remove-btn" onclick="removeEscalaByDate()" style="margin-right:auto">Remover</button>
-      <button class="btn btn-primary" onclick="saveAssign()">Salvar</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-rodizio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="applyRodizio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Gerar Escala</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-usuario" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="modal-user-title">Novo Usuário</div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">Nome</label><input type="text" class="form-input" id="usuario-name-input"></div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">PIN (4 dígitos)</label><input type="text" class="form-input" id="usuario-pin-input" maxlength="4" pattern="[0-9]{4}" placeholder="Ex: 1234"></div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Perfil</label>
+      <select class="form-input" id="usuario-perfil-input" onchange="updateUsuarioTechField()">
+        <option value="tecnico">Técnico</option>
+        <option value="gestor">Gestor</option>
+      </select>
+    </div>
+    <div class="form-group" id="usuario-tech-group">
+      <label class="form-label">Técnico Vinculado (para notificações)</label>
+      <select class="form-input" id="usuario-tech-input"><option value="">Nenhum</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-usuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUsuario()">Salvar</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <button class="bottom-nav-item active" onclick="navigate('dashboard')" id="bnav-dashboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Início
-    </button>
-    <button class="bottom-nav-item" onclick="navigate('calendar')" id="bnav-calendar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendário
-    </button>
-    <button class="bottom-nav-item" onclick="navigate('escalas')" id="bnav-escalas">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-      Escalas
-    </button>
-    <button class="bottom-nav-item" onclick="navigate('trocas')" id="bnav-trocas">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-      Trocas
-    </button>
-    <button class="bottom-nav-item" onclick="navigate('tecnicos')" id="bnav-tecnicos">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Equipe
-    </button>
-    <button class="bottom-nav-item" onclick="navigate('relatorios')" id="bnav-relatorios">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Dados
-    </button>
-  </div>
-</nav>
-
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav"><div class="bottom-nav-inner">
+  <button class="bottom-nav-item active" onclick="navigate('dashboard')" id="bnav-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Início</button>
+  <button class="bottom-nav-item" onclick="navigate('calendar')" id="bnav-calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendário</button>
+  <button class="bottom-nav-item" onclick="navigate('trocas')" id="bnav-trocas" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><span class="bnav-badge" id="bnav-badge-trocas" style="display:none"></span>Trocas</button>
+  <button class="bottom-nav-item" onclick="navigate('notificacoes')" id="bnav-notificacoes" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="bnav-badge" id="bnav-badge-notif" style="display:none"></span>Alertas</button>
+  <button class="bottom-nav-item" onclick="navigate('tecnicos')" id="bnav-tecnicos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Equipe</button>
+</div></nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// =====================================================
-// CONFIGURAÇÃO — cole aqui suas credenciais Supabase
-// Encontre em: supabase.com → seu projeto → Settings → API
-// =====================================================
-const SUPABASE_URL  = 'https://tsxnwulbwtrawhjaswcw.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_z6FkNvbQB9opjfrwT8NxhQ_6tAB6pkL';
-// =====================================================
+// ═══════════════════════════════════════════════
+// CONFIGURAÇÃO SUPABASE
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'https://tsxnwulbwtrawhjaswcw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_z6FkNvbQB9opjfrwT8NxhQ_6tAB6pkL';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const isConfigured = SUPABASE_KEY.length > 10;
-let db = null;
-if (isConfigured) {
-  db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = { tecnicos:[], escalas:[], trocas:[], usuarios:[], notificacoes:[], auditLog:[] };
+let currentUser   = null;  // logged-in user object
+let editingTechId = null, editingEscalaId = null, editingUserId = null;
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+let assigningDate = null, assignTipoSel = 'normal', escTipoSel = 'normal';
+let respondingTrocaId = null;
+let chartDash = null, chartBar = null, chartPie = null;
+let loginSelectedUser = null, pinBuffer = '';
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+const formatDate = d => d.toISOString().split('T')[0];
+const parseDate  = s => new Date(s + 'T12:00:00');
+const fmtBR      = s => parseDate(s).toLocaleDateString('pt-BR');
+const fmtMY      = (y,m) => new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+const techById   = id => state.tecnicos.find(t => t.id == id);
+const userById   = id => state.usuarios.find(u => u.id == id);
+const escalaByDate = d => state.escalas.find(e => e.date === d);
+const closeModal = id => { document.getElementById(id).style.display='none'; };
+const tipoLabel  = t => ({normal:'Normal',folga:'Folga',feriado:'Feriado',todos:'Todos Juntos'}[t]||t);
+const tipoClass  = t => `tipo-${t}`;
+const avatarInitials = name => name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const avatarColor = name => {
+  const colors = ['#00d4aa','#0ea5e9','#f59e0b','#a855f7','#f43f5e','#10b981','#6366f1'];
+  let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))%colors.length;
+  return colors[h];
+};
+const setLoading = on => { document.getElementById('loading-overlay').style.display = on?'flex':'none'; };
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3500);
 }
 
-// ===================== STATE (cache local) =====================
-let state = { tecnicos: [], escalas: [], trocas: [] };
-let editingTechId   = null;
-let editingEscalaId = null;
-let calYear    = new Date().getFullYear();
-let calMonth   = new Date().getMonth();
-let assigningDate = null;
-let chartDash  = null, chartBar = null, chartPie = null;
-
-// ===================== DB HELPERS =====================
+// ═══════════════════════════════════════════════
+// DB LOAD
+// ═══════════════════════════════════════════════
 async function dbLoad() {
-  if (!db) return;
   setLoading(true);
   try {
-    const [{ data: tecnicos }, { data: escalas }, { data: trocas }] = await Promise.all([
-      db.from('tecnicos').select('*').eq('active', true).order('name'),
+    const [t, e, tr, u, n, a] = await Promise.all([
+      db.from('tecnicos').select('*').eq('active',true).order('ordem_rodizio').order('name'),
       db.from('escalas').select('*').order('date'),
-      db.from('trocas').select('*').order('created_at', { ascending: false })
+      db.from('trocas').select('*').order('created_at',{ascending:false}),
+      db.from('usuarios').select('*').eq('active',true).order('name'),
+      db.from('notificacoes').select('*').order('created_at',{ascending:false}).limit(60),
+      db.from('audit_log').select('*').order('created_at',{ascending:false}).limit(100)
     ]);
-    // Map snake_case → camelCase
-    state.tecnicos = (tecnicos || []).map(t => ({
-      id: t.id, name: t.name, role: t.role, color: t.color, active: t.active
-    }));
-    state.escalas = (escalas || []).map(e => ({
-      id: e.id, date: e.date, techId: e.tech_id, obs: e.obs || ''
-    }));
-    state.trocas = (trocas || []).map(t => ({
-      id: t.id, fromEscalaId: t.from_escala_id, toEscalaId: t.to_escala_id,
-      motivo: t.motivo, status: t.status
-    }));
-  } catch(err) {
-    showToast('Erro ao carregar dados: ' + err.message, 'error');
-  }
+    state.tecnicos = (t.data||[]).map(x=>({id:x.id,name:x.name,role:x.role,color:x.color,active:x.active,ordemRodizio:x.ordem_rodizio||0}));
+    state.escalas  = (e.data||[]).map(x=>({id:x.id,date:x.date,techId:x.tech_id,tipo:x.tipo||'normal',obs:x.obs||''}));
+    state.trocas   = (tr.data||[]).map(x=>({id:x.id,fromEscalaId:x.from_escala_id,toEscalaId:x.to_escala_id,solicitanteId:x.solicitante_id,aprovadorId:x.aprovador_id,motivo:x.motivo,status:x.status,respostaMotivo:x.resposta_motivo||''}));
+    state.usuarios = (u.data||[]).map(x=>({id:x.id,name:x.name,pin:x.pin,perfil:x.perfil,techId:x.tech_id,active:x.active}));
+    state.notificacoes = (n.data||[]).map(x=>({id:x.id,destinatarioId:x.destinatario_id,tipo:x.tipo,titulo:x.titulo,mensagem:x.mensagem,lida:x.lida,trocaId:x.troca_id,createdAt:x.created_at}));
+    state.auditLog = (a.data||[]).map(x=>({id:x.id,usuarioId:x.usuario_id,usuarioName:x.usuario_name,acao:x.acao,tabela:x.tabela,registroId:x.registro_id,detalhe:x.detalhe,createdAt:x.created_at}));
+  } catch(err){ showToast('Erro ao carregar: '+err.message,'error'); }
   setLoading(false);
+  updateBadges();
 }
 
-async function dbInsertTecnico(data) {
-  const { data: row, error } = await db.from('tecnicos').insert({
-    name: data.name, role: data.role, color: data.color, active: true
-  }).select().single();
-  if (error) throw error;
-  return { ...data, id: row.id };
+// ═══════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════
+async function audit(acao, tabela, registroId, detalhe) {
+  if (!currentUser) return;
+  try {
+    await db.from('audit_log').insert({
+      usuario_id: currentUser.id,
+      usuario_name: currentUser.name,
+      acao, tabela, registro_id: registroId||null, detalhe
+    });
+  } catch(e){ console.warn('audit fail',e); }
 }
 
-async function dbUpdateTecnico(id, data) {
-  const { error } = await db.from('tecnicos').update({
-    name: data.name, role: data.role, color: data.color
-  }).eq('id', id);
-  if (error) throw error;
+// ═══════════════════════════════════════════════
+// NOTIFICAÇÕES
+// ═══════════════════════════════════════════════
+async function createNotif(destinatarioId, tipo, titulo, mensagem, trocaId=null) {
+  try {
+    await db.from('notificacoes').insert({ destinatario_id:destinatarioId, tipo, titulo, mensagem, troca_id:trocaId });
+  } catch(e){ console.warn('notif fail',e); }
 }
 
-async function dbDeleteTecnico(id) {
-  const { error } = await db.from('tecnicos').update({ active: false }).eq('id', id);
-  if (error) throw error;
+function updateBadges() {
+  if (!currentUser) return;
+  const myNotifs = state.notificacoes.filter(n => n.destinatarioId === currentUser.id && !n.lida);
+  const pendTrocas = state.trocas.filter(t =>
+    t.status === 'pendente' && t.aprovadorId === currentUser.id
+  );
+  const gestor = currentUser.perfil === 'gestor';
+  const gestorPend = gestor ? state.trocas.filter(t=>t.status==='aguardando_gestor').length : 0;
+  const notifCount = myNotifs.length + gestorPend;
+  const trocasCount = pendTrocas.length + (gestor ? gestorPend : 0);
+
+  const nb = document.getElementById('nav-badge-notif');
+  if (nb) { nb.textContent=notifCount; nb.style.display=notifCount>0?'inline':'none'; }
+  const tb = document.getElementById('nav-badge-trocas');
+  if (tb) { tb.textContent=trocasCount; tb.style.display=trocasCount>0?'inline':'none'; }
+  const bnt = document.getElementById('bnav-badge-trocas');
+  if (bnt) { bnt.textContent=trocasCount; bnt.style.display=trocasCount>0?'inline':'none'; }
+  const bnn = document.getElementById('bnav-badge-notif');
+  if (bnn) { bnn.textContent=notifCount; bnn.style.display=notifCount>0?'inline':'none'; }
+  const mn = document.getElementById('mob-notif-count');
+  if (mn) { mn.textContent=notifCount; mn.style.display=notifCount>0?'inline':'none'; }
 }
 
-async function dbUpsertEscala(date, techId, obs) {
-  const { data: row, error } = await db.from('escalas').upsert(
-    { date, tech_id: techId, obs },
-    { onConflict: 'date' }
-  ).select().single();
-  if (error) throw error;
-  return row;
-}
-
-async function dbDeleteEscala(id) {
-  const { error } = await db.from('escalas').delete().eq('id', id);
-  if (error) throw error;
-}
-
-async function dbDeleteEscalaByDate(date) {
-  const { error } = await db.from('escalas').delete().eq('date', date);
-  if (error) throw error;
-}
-
-async function dbInsertTroca(data) {
-  const { data: row, error } = await db.from('trocas').insert({
-    from_escala_id: data.fromEscalaId,
-    to_escala_id:   data.toEscalaId,
-    motivo:         data.motivo,
-    status:         data.status
-  }).select().single();
-  if (error) throw error;
-  return { ...data, id: row.id };
-}
-
-async function dbDeleteTroca(id) {
-  const { error } = await db.from('trocas').delete().eq('id', id);
-  if (error) throw error;
-}
-
-// ===================== LOADING UI =====================
-function setLoading(on) {
-  document.getElementById('loading-overlay').style.display = on ? 'flex' : 'none';
-}
-
-// ===================== NAVIGATE =====================
-async function navigate(page) {
-  const pages = ['dashboard','calendar','escalas','trocas','tecnicos','relatorios'];
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  const idx = pages.indexOf(page);
-  if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
-  const bnavEl = document.getElementById('bnav-' + page);
-  if (bnavEl) bnavEl.classList.add('active');
-  window.scrollTo(0, 0);
-  // Reload data from Supabase on each navigation
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+async function showLogin() {
   await dbLoad();
-  if (page === 'dashboard')   renderDashboard();
-  if (page === 'calendar')    renderCalendar();
-  if (page === 'escalas')     renderEscalas();
-  if (page === 'trocas')      renderTrocas();
-  if (page === 'tecnicos')    renderTecnicos();
-  if (page === 'relatorios')  renderRelatorios();
+  const list = document.getElementById('user-select-list');
+  list.innerHTML = state.usuarios.map(u => `
+    <div class="user-option" onclick="selectLoginUser(${u.id})" id="uopt-${u.id}">
+      <div class="user-avatar" style="background:${avatarColor(u.name)}">${avatarInitials(u.name)}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${u.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${u.perfil==='gestor'?'👑 Gestor':'👷 Técnico'}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px">Nenhum usuário cadastrado. Execute o schema v3 no Supabase.</div>';
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
-// ===================== UTILS =====================
-function getSaturdaysOfMonth(y, m) {
-  const sats = [], d = new Date(y, m, 1);
-  while (d.getMonth() === m) {
-    if (d.getDay() === 6) sats.push(formatDate(d));
-    d.setDate(d.getDate() + 1);
+function selectLoginUser(id) {
+  loginSelectedUser = state.usuarios.find(u=>u.id===id);
+  if (!loginSelectedUser) return;
+  document.querySelectorAll('.user-option').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('uopt-'+id).classList.add('selected');
+  document.getElementById('login-selected-name').textContent = loginSelectedUser.name;
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('login-step-user').style.display = 'none';
+  document.getElementById('login-step-pin').style.display = 'block';
+}
+
+function backToUserSelect() {
+  loginSelectedUser = null; pinBuffer = '';
+  document.getElementById('login-step-pin').style.display = 'none';
+  document.getElementById('login-step-user').style.display = 'block';
+}
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(checkPin, 150);
+}
+function pinDel() { pinBuffer=pinBuffer.slice(0,-1); updatePinDots(); }
+function updatePinDots() {
+  for(let i=0;i<4;i++) {
+    const d=document.getElementById('pd'+i);
+    if(d) { d.classList.toggle('filled', i<pinBuffer.length); }
   }
-  return sats;
 }
-function formatDate(d) { return d.toISOString().split('T')[0]; }
-function parseDate(s) { return new Date(s + 'T12:00:00'); }
-function fmtBR(s) { return parseDate(s).toLocaleDateString('pt-BR'); }
-function fmtMonthYear(y, m) { return new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); }
-function techById(id) { return state.tecnicos.find(t => t.id == id); }
-function escalaByDate(d) { return state.escalas.find(e => e.date === d); }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ===================== DASHBOARD =====================
-function renderDashboard() {
-  const now = new Date();
-
-  const totalEscalas  = state.escalas.length;
-  const totalTecnicos = state.tecnicos.filter(t => t.active).length;
-  const trocasAprov   = state.trocas.filter(t => t.status === 'aprovada').length;
-  const trocasPend    = state.trocas.filter(t => t.status === 'pendente').length;
-
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card c1"><div class="stat-label">Total Escalas</div><div class="stat-val">${totalEscalas}</div><div class="stat-sub">sábados cadastrados</div></div>
-    <div class="stat-card c2"><div class="stat-label">Técnicos Ativos</div><div class="stat-val">${totalTecnicos}</div><div class="stat-sub">na equipe NSI</div></div>
-    <div class="stat-card c3"><div class="stat-label">Trocas Aprovadas</div><div class="stat-val">${trocasAprov}</div><div class="stat-sub">registradas</div></div>
-    <div class="stat-card" style="border-top:2px solid #a855f7"><div class="stat-label">Trocas Pendentes</div><div class="stat-val">${trocasPend}</div><div class="stat-sub">aguardando aprovação</div></div>
-  `;
-
-  const upcoming = state.escalas
-    .filter(e => parseDate(e.date) >= new Date())
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 5);
-
-  if (upcoming.length === 0) {
-    document.getElementById('next-saturdays').innerHTML = '<div class="empty"><p>Nenhum sábado futuro cadastrado</p></div>';
+function checkPin() {
+  if (!loginSelectedUser) return;
+  if (pinBuffer === loginSelectedUser.pin) {
+    document.getElementById('login-screen').style.display = 'none';
+    currentUser = loginSelectedUser;
+    afterLogin();
   } else {
-    document.getElementById('next-saturdays').innerHTML = upcoming.map(e => {
-      const t = techById(e.techId);
-      return `<div class="swap-card" style="margin-bottom:8px">
-        <div class="tech-color" style="background:${t ? t.color : '#666'};width:10px;height:10px;border-radius:50%"></div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600;color:var(--text)">${fmtBR(e.date)}</div>
-          <div style="font-size:12px;color:var(--text3)">${parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long'})}</div>
-        </div>
-        <div style="font-size:13px;font-weight:600;color:${t ? t.color : 'var(--text3)'}">${t ? t.name : '—'}</div>
-      </div>`;
-    }).join('');
+    document.getElementById('pin-error').textContent = 'PIN incorreto. Tente novamente.';
+    pinBuffer = '';
+    updatePinDots();
+    // shake animation
+    const dots = document.getElementById('pin-display');
+    dots.style.animation='shake .3s ease';
+    setTimeout(()=>dots.style.animation='',400);
   }
-  const thisMonth = state.escalas.filter(e => {
-    const d = parseDate(e.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
+
+async function afterLogin() {
+  await dbLoad();
+  updateUserUI();
+  renderDashboard();
+}
+
+function updateUserUI() {
+  if (!currentUser) return;
+  const avatar = document.getElementById('sidebar-avatar');
+  const uname  = document.getElementById('sidebar-uname');
+  const urole  = document.getElementById('sidebar-urole');
+  if (avatar) { avatar.textContent=avatarInitials(currentUser.name); avatar.style.background=avatarColor(currentUser.name); }
+  if (uname) uname.textContent = currentUser.name;
+  if (urole) urole.textContent = currentUser.perfil==='gestor' ? '👑 Gestor' : '👷 Técnico';
+  // Show gestor-only nav items
+  const isGestor = currentUser.perfil === 'gestor';
+  ['nav-auditoria','nav-usuarios'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = isGestor?'flex':'none';
   });
-  renderPieChart('chart-dash', thisMonth, 'chartDash');
 }
 
-// ===================== CALENDAR =====================
+function logout() {
+  currentUser = null; loginSelectedUser = null; pinBuffer = '';
+  showLogin();
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATE
+// ═══════════════════════════════════════════════
+const allPages = ['dashboard','calendar','escalas','trocas','notificacoes','tecnicos','auditoria','usuarios','relatorios'];
+async function navigate(page) {
+  if (!currentUser) { showLogin(); return; }
+  // Gestor-only pages
+  if (['auditoria','usuarios'].includes(page) && currentUser.perfil!=='gestor') {
+    showToast('Acesso restrito ao gestor','error'); return;
+  }
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  // sidebar nav match
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(ni => { if(ni.getAttribute('onclick')?.includes("'"+page+"'")) ni.classList.add('active'); });
+  const bnav = document.getElementById('bnav-'+page);
+  if (bnav) bnav.classList.add('active');
+  window.scrollTo(0,0);
+  await dbLoad();
+  if(page==='dashboard')    renderDashboard();
+  if(page==='calendar')     renderCalendar();
+  if(page==='escalas')      renderEscalas();
+  if(page==='trocas')       renderTrocas();
+  if(page==='notificacoes') renderNotificacoes();
+  if(page==='tecnicos')     renderTecnicos();
+  if(page==='auditoria')    renderAuditoria();
+  if(page==='usuarios')     renderUsuarios();
+  if(page==='relatorios')   renderRelatorios();
+}
+
+// ═══════════════════════════════════════════════
+// ALERTS / DASHBOARD
+// ═══════════════════════════════════════════════
+function renderAlerts() {
+  const today = new Date(), todayStr = formatDate(today);
+  const alerts = [];
+  const todayEsc = escalaByDate(todayStr);
+  if (today.getDay()===6) {
+    if (todayEsc?.tipo==='folga') alerts.push({cls:'info',icon:'⚡',msg:'Hoje é sábado de <strong>FOLGA</strong> — ninguém precisa ir presencialmente.'});
+    else if (todayEsc?.tipo==='feriado') alerts.push({cls:'danger',icon:'🗓️',msg:`Hoje é <strong>FERIADO</strong>${todayEsc.obs?' · '+todayEsc.obs:''}`});
+    else if (todayEsc?.tipo==='todos') alerts.push({cls:'todos',icon:'👥',msg:'Hoje é sábado de <strong>TODOS JUNTOS</strong> — toda a equipe deve comparecer!'});
+    else if (todayEsc?.tipo==='normal') {
+      const t=techById(todayEsc.techId);
+      if(t) alerts.push({cls:'success',icon:'✅',msg:`Técnico de hoje: <strong style="color:${t.color}">${t.name}</strong>`});
+    }
+  }
+  // Personal: upcoming shift
+  if (currentUser?.techId) {
+    const myNext = state.escalas.filter(e=>e.date>todayStr&&e.tipo==='normal'&&e.techId===currentUser.techId).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    if (myNext) {
+      const days=Math.ceil((parseDate(myNext.date)-today)/86400000);
+      var daysStr=days===1?' — <strong>amanhã!</strong>':' ('+days+' dias)';alerts.push({cls:days<=7?'warn':'info',icon:days<=7?'⏰':'📅',msg:'Seu próximo plantão: <strong>'+fmtBR(myNext.date)+'</strong>'+daysStr});
+    }
+    // Next Saturday NOT yours
+    const nextNormal = state.escalas.filter(e=>e.date>todayStr&&e.tipo==='normal'&&e.techId&&e.techId!==currentUser.techId).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    if (nextNormal) {
+      const t=techById(nextNormal.techId);
+      const days=Math.ceil((parseDate(nextNormal.date)-today)/86400000);
+      if(days<=7&&t) alerts.push({cls:'info',icon:'ℹ️',msg:`Próximo sábado (${fmtBR(nextNormal.date)}) é de <strong style="color:${t.color}">${t.name}</strong> — não é o seu dia.`});
+    }
+  }
+  // Gestor: pending gestão
+  if (currentUser?.perfil==='gestor') {
+    const pendGestor = state.trocas.filter(t=>t.status==='aguardando_gestor').length;
+    if (pendGestor>0) alerts.push({cls:'gestor',icon:'👑',msg:`<strong>${pendGestor} troca(s)</strong> aguardando decisão do gestor.`});
+  }
+  // Todos juntos upcoming
+  const nextTodos = state.escalas.filter(e=>e.date>=todayStr&&e.tipo==='todos').sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(nextTodos&&nextTodos.date!==todayStr){const d=Math.ceil((parseDate(nextTodos.date)-today)/86400000);if(d<=14)alerts.push({cls:'todos',icon:'👥',msg:`Sábado de <strong>TODOS JUNTOS</strong> em <strong>${fmtBR(nextTodos.date)}</strong> (${d} dias)${nextTodos.obs?' · '+nextTodos.obs:''}` });}
+  document.getElementById('dash-alerts').innerHTML = alerts.map(a=>`<div class="alert-banner ${a.cls}"><div class="alert-icon">${a.icon}</div><div>${a.msg}</div></div>`).join('');
+}
+
+function renderDashboard() {
+  renderAlerts();
+  const now=new Date(), todayStr=formatDate(now);
+  const normal=state.escalas.filter(e=>e.tipo==='normal');
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card c1"><div class="stat-label">Plantões Normais</div><div class="stat-val">${normal.length}</div><div class="stat-sub">sábados com técnico</div></div>
+    <div class="stat-card c2"><div class="stat-label">Técnicos Ativos</div><div class="stat-val">${state.tecnicos.length}</div><div class="stat-sub">na equipe NSI</div></div>
+    <div class="stat-card c3"><div class="stat-label">Trocas Aprovadas</div><div class="stat-val">${state.trocas.filter(t=>t.status==='aprovada').length}</div><div class="stat-sub">registradas</div></div>
+    <div class="stat-card c4"><div class="stat-label">Pendentes Aprovação</div><div class="stat-val">${state.trocas.filter(t=>t.status==='pendente'||t.status==='aguardando_gestor').length}</div><div class="stat-sub">trocas aguardando</div></div>
+  `;
+  const upcoming=state.escalas.filter(e=>e.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+  const tcols={folga:'var(--folga)',feriado:'var(--feriado)',todos:'var(--todos)'};
+  document.getElementById('next-saturdays').innerHTML = upcoming.length===0
+    ? '<div class="empty"><p>Nenhum sábado futuro</p></div>'
+    : upcoming.map(e=>{
+        const t=e.tipo==='normal'?techById(e.techId):null;
+        const col=e.tipo!=='normal'?tcols[e.tipo]:(t?t.color:'var(--text3)');
+        const lbl=e.tipo!=='normal'?tipoLabel(e.tipo):(t?t.name:'— sem técnico');
+        return`<div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--surface2);border-radius:8px;margin-bottom:6px;border:1px solid var(--border)">
+          <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--text)">${fmtBR(e.date)}</div></div>
+          <span style="font-size:12px;font-weight:700;color:${col}">${lbl}</span>
+          <span class="tipo-badge ${tipoClass(e.tipo)}">${tipoLabel(e.tipo)}</span>
+        </div>`;
+      }).join('');
+  const thisMonth=state.escalas.filter(e=>{const d=parseDate(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&e.tipo==='normal';});
+  renderPieChart('chart-dash',thisMonth,'chartDash');
+}
+
+// ═══════════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════════
 function renderCalendar() {
-  document.getElementById('cal-month-label').textContent = fmtMonthYear(calYear, calMonth);
-  const grid = document.getElementById('cal-grid');
-  const headers = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  let html = headers.map(h => `<div class="cal-day-header">${h}</div>`).join('');
+  const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
+  const statusEl=document.getElementById('cal-rodizio-status');
+  if(ordered.length>0){
+    statusEl.innerHTML=`<div class="rodizio-panel"><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>Ordem do Rodízio
+      <button class="btn btn-secondary btn-sm" onclick="openRodizioModal()" style="font-size:10px;padding:3px 9px">Gerar</button>
+    </div>
+    <div class="rodizio-queue">${ordered.map((t,i)=>`
+      <span class="rodizio-item" style="background:${t.color}20;color:${t.color};border:1px solid ${t.color}40"><span style="opacity:.5">${i+1}.</span>${t.name}</span>
+      ${i<ordered.length-1?'<span style="color:var(--text3);font-size:12px">→</span>':'<span style="color:var(--text3);font-size:11px">↩</span>'}
+    `).join('')}</div></div>`;
+  } else statusEl.innerHTML='';
 
-  const firstDay    = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+  document.getElementById('cal-month-label').textContent=fmtMY(calYear,calMonth);
+  const grid=document.getElementById('cal-grid');
+  const hdr=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let html=hdr.map(h=>`<div class="cal-day-hdr">${h}</div>`).join('');
+  const first=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const dprev=new Date(calYear,calMonth,0).getDate();
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty other-month"><span class="cal-num">${dprev-first+1+i}</span></div>`;
+  for(let d=1;d<=dim;d++){
+    const date=new Date(calYear,calMonth,d), isSat=date.getDay()===6, ds=formatDate(date);
+    if(!isSat){html+=`<div class="cal-day"><span class="cal-num">${d}</span></div>`;continue;}
+    const e=escalaByDate(ds), tipo=e?e.tipo:null, tech=e&&tipo==='normal'?techById(e.techId):null;
+    let cls='saturday',badge='<span class="cal-sat-label">+</span>';
+    if(tipo==='folga'){cls='sat-folga';badge='<span class="cal-sat-label" style="color:var(--folga);font-size:7px">FOLGA</span>';}
+    else if(tipo==='feriado'){cls='sat-feriado';badge='<span class="cal-sat-label" style="color:var(--feriado);font-size:7px">FERIADO</span>';}
+    else if(tipo==='todos'){cls='sat-todos';badge='<span class="cal-sat-label" style="color:var(--todos);font-size:7px">TODOS</span>';}
+    else if(tech) badge=`<span class="cal-tech-badge" style="background:${tech.color}">${tech.name}</span>`;
+    html+=`<div class="cal-day ${cls}" onclick="openAssign('${ds}')"><span class="cal-num">${d}</span>${badge}</div>`;
+  }
+  const rem=(first+dim)%7===0?0:7-(first+dim)%7;
+  for(let i=1;i<=rem;i++) html+=`<div class="cal-day empty other-month"><span class="cal-num">${i}</span></div>`;
+  grid.innerHTML=html;
 
-  for (let i = 0; i < firstDay; i++) {
-    html += `<div class="cal-day empty other-month"><span class="cal-num">${daysInPrev - firstDay + 1 + i}</span></div>`;
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date   = new Date(calYear, calMonth, d);
-    const isSat  = date.getDay() === 6;
-    const dateStr = formatDate(date);
-    const escala = escalaByDate(dateStr);
-    const tech   = escala ? techById(escala.techId) : null;
-    if (isSat) {
-      html += `<div class="cal-day saturday" onclick="openAssign('${dateStr}')">
-        <span class="cal-num">${d}</span>
-        ${tech ? `<span class="cal-tech-badge" style="background:${tech.color}">${tech.name}</span>` : '<span class="cal-sat-label">+ atribuir</span>'}
-      </div>`;
-    } else {
-      html += `<div class="cal-day"><span class="cal-num">${d}</span></div>`;
-    }
-  }
-  const total = firstDay + daysInMonth;
-  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
-  for (let i = 1; i <= remaining; i++) {
-    html += `<div class="cal-day empty other-month"><span class="cal-num">${i}</span></div>`;
-  }
-  grid.innerHTML = html;
-
-  document.getElementById('cal-legend').innerHTML = state.tecnicos.filter(t => t.active).map(t =>
-    `<div style="display:flex;align-items:center;gap:6px">
-      <div style="width:8px;height:8px;border-radius:50%;background:${t.color}"></div>
-      <span style="font-size:11px;color:var(--text2)">${t.name}</span>
-    </div>`).join('');
-
-  const sideList = document.getElementById('cal-sidebar-list');
-  const sats = [];
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(calYear, calMonth, d);
-    if (date.getDay() === 6) {
-      const ds = formatDate(date);
-      const e  = escalaByDate(ds);
-      const t  = e ? techById(e.techId) : null;
-      sats.push({ ds, d, t });
-    }
-  }
-  const now2 = formatDate(new Date());
-  sideList.innerHTML = sats.map(({ ds, d, t }) => {
-    const isPast = ds < now2, isToday = ds === now2;
-    const statusColor = isPast ? 'var(--text3)' : isToday ? 'var(--accent3)' : 'var(--success)';
-    const statusLabel = isPast ? 'Realizado' : isToday ? 'Hoje' : 'Agendado';
-    return `<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s"
-      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="width:32px;height:32px;border-radius:8px;background:${t ? t.color+'22':'var(--surface)'};border:1px solid ${t ? t.color+'44':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${t ? t.color:'var(--text3)'}">S${d}</span>
+  const now2=formatDate(new Date());
+  let sideHtml='';
+  for(let d=1;d<=dim;d++){
+    const date=new Date(calYear,calMonth,d);
+    if(date.getDay()!==6)continue;
+    const ds=formatDate(date),e=escalaByDate(ds);
+    const tipo=e?e.tipo:null,t=e&&tipo==='normal'?techById(e.techId):null;
+    const isPast=ds<now2,isToday=ds===now2;
+    const scol=isPast?'var(--text3)':isToday?'var(--accent3)':'var(--success)';
+    const slbl=isPast?'Realizado':isToday?'Hoje':'Agendado';
+    const tcols={folga:'var(--folga)',feriado:'var(--feriado)',todos:'var(--todos)'};
+    const dc=tipo&&tipo!=='normal'?tcols[tipo]:(t?t.color:'var(--text3)');
+    const dn=tipo&&tipo!=='normal'?tipoLabel(tipo):(t?t.name+(t.role?' · '+t.role:''):'— sem técnico');
+    sideHtml+=`<div onclick="openAssign('${ds}')" style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface2);border-radius:8px;margin-bottom:5px;cursor:pointer;border:1px solid var(--border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:30px;height:30px;border-radius:7px;background:${dc}20;border:1px solid ${dc}40;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${dc}">${d}</span>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--text)">${fmtBR(ds)}</div>
-        <div style="font-size:11px;color:${t ? t.color:'var(--text3)'};">${t ? t.name + (t.role ? ' · ' + t.role : '') : '— sem técnico'}</div>
-      </div>
-      <span style="font-size:10px;font-weight:600;color:${statusColor};background:${statusColor}22;padding:2px 8px;border-radius:10px">${statusLabel}</span>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text)">${fmtBR(ds)}</div><div style="font-size:10px;color:${dc}">${dn}</div></div>
+      ${e?`<span class="tipo-badge ${tipoClass(e.tipo)}">${tipoLabel(e.tipo)}</span>`:''}
+      <span style="font-size:9px;font-weight:700;color:${scol};background:${scol}22;padding:2px 7px;border-radius:9px">${slbl}</span>
     </div>`;
-  }).join('') || '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Nenhum sábado neste mês</div>';
-}
-
-function changeMonth(dir) {
-  calMonth += dir;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  if (calMonth < 0)  { calMonth = 11; calYear--; }
-  renderCalendar();
-}
-
-// ===================== ASSIGN =====================
-function openAssign(dateStr) {
-  assigningDate = dateStr;
-  document.getElementById('modal-assign-title').textContent = 'Sábado — ' + fmtBR(dateStr);
-  document.getElementById('modal-assign-date').textContent  = parseDate(dateStr).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const sel = document.getElementById('assign-tech');
-  sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
-    `<option value="${t.id}">${t.name}</option>`).join('');
-  const existing = escalaByDate(dateStr);
-  if (existing) {
-    sel.value = existing.techId;
-    document.getElementById('assign-obs').value = existing.obs || '';
-    document.getElementById('assign-remove-btn').style.display = 'block';
-  } else {
-    document.getElementById('assign-obs').value = '';
-    document.getElementById('assign-remove-btn').style.display = 'none';
   }
-  document.getElementById('modal-assign').style.display = 'flex';
+  document.getElementById('cal-sidebar-list').innerHTML=sideHtml||'<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Nenhum sábado neste mês</div>';
+}
+function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+// ASSIGN
+function selectTipo(t,btn){
+  assignTipoSel=t;
+  document.querySelectorAll('#assign-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
+  if(btn)btn.classList.add('active-'+t);
+  document.getElementById('assign-tech-section').style.display=t==='normal'?'block':'none';
+}
+function openAssign(ds){
+  assigningDate=ds;
+  document.getElementById('modal-assign-title').textContent='Sábado — '+fmtBR(ds);
+  document.getElementById('modal-assign-date').textContent=parseDate(ds).toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const sel=document.getElementById('assign-tech');
+  sel.innerHTML='<option value="">— Selecione —</option>'+state.tecnicos.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  const e=escalaByDate(ds), tipo=e?e.tipo:'normal';
+  assignTipoSel=tipo;
+  document.querySelectorAll('#assign-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
+  const tipoMap={normal:0,folga:1,feriado:2,todos:3};
+  const btns=document.querySelectorAll('#assign-tipo-selector .tipo-btn');
+  if(btns[tipoMap[tipo]])btns[tipoMap[tipo]].classList.add('active-'+tipo);
+  document.getElementById('assign-tech-section').style.display=tipo==='normal'?'block':'none';
+  if(e){sel.value=e.techId||'';document.getElementById('assign-obs').value=e.obs||'';document.getElementById('assign-remove-btn').style.display='block';}
+  else{document.getElementById('assign-obs').value='';document.getElementById('assign-remove-btn').style.display='none';}
+  document.getElementById('modal-assign').style.display='flex';
+}
+async function saveAssign(){
+  const tipo=assignTipoSel, techId=tipo==='normal'?document.getElementById('assign-tech').value:null;
+  const obs=document.getElementById('assign-obs').value;
+  if(tipo==='normal'&&!techId){showToast('Selecione um técnico','error');return;}
+  try{
+    const row=await dbUpsertEscala(assigningDate,techId?parseInt(techId):null,tipo,obs);
+    const t=techId?techById(parseInt(techId)):null;
+    await audit('ESCALA_EDITADA','escalas',row?.id,`Sábado ${fmtBR(assigningDate)} → ${tipoLabel(tipo)}${t?' · '+t.name:''}`);
+    await dbLoad();closeModal('modal-assign');renderCalendar();
+    showToast('Sábado salvo!','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+async function removeEscalaByDate(){
+  try{
+    await db.from('escalas').delete().eq('date',assigningDate);
+    await audit('ESCALA_REMOVIDA','escalas',null,`Sábado ${fmtBR(assigningDate)} removido`);
+    await dbLoad();closeModal('modal-assign');renderCalendar();
+    showToast('Removido','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-async function saveAssign() {
-  const techId = document.getElementById('assign-tech').value;
-  const obs    = document.getElementById('assign-obs').value;
-  if (!techId) { showToast('Selecione um técnico', 'error'); return; }
-  try {
-    await dbUpsertEscala(assigningDate, parseInt(techId), obs);
-    await dbLoad();
-    closeModal('modal-assign');
-    renderCalendar();
-    showToast('Escala salva!', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
-}
-
-async function removeEscalaByDate() {
-  try {
-    await dbDeleteEscalaByDate(assigningDate);
-    await dbLoad();
-    closeModal('modal-assign');
-    renderCalendar();
-    showToast('Escala removida', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
-}
-
-// ===================== ESCALAS =====================
-function renderEscalas() {
-  const sorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  const now    = formatDate(new Date());
-  const tbody  = document.getElementById('escala-tbody');
-  if (sorted.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><p>Nenhuma escala cadastrada ainda</p></div></td></tr>';
-    return;
-  }
-  tbody.innerHTML = sorted.map(e => {
-    const t = techById(e.techId);
-    const isPast = e.date < now, isToday = e.date === now;
-    return `<tr>
-      <td><span style="font-family:DM Mono,monospace;font-size:12px">${fmtBR(e.date)}</span></td>
-      <td style="text-transform:capitalize">${parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long'})}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${t ? t.color : '#666'}"></div>
-        <span style="color:${t ? t.color : 'var(--text3)'};font-weight:600">${t ? t.name : '—'}</span>
-        ${e.obs ? `<span style="font-size:11px;color:var(--text3)">${e.obs}</span>` : ''}
-      </div></td>
-      <td>${isPast ? '<span class="badge badge-blue">Realizado</span>' : isToday ? '<span class="badge badge-yellow">Hoje</span>' : '<span class="badge badge-green">Agendado</span>'}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick="editEscala(${e.id})">Editar</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteEscala(${e.id})">Remover</button>
-      </div></td>
+// ═══════════════════════════════════════════════
+// ESCALAS PAGE
+// ═══════════════════════════════════════════════
+function renderEscalas(){
+  const sorted=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
+  const now=formatDate(new Date());
+  const tbody=document.getElementById('escala-tbody');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty"><p>Nenhuma escala</p></div></td></tr>';return;}
+  tbody.innerHTML=sorted.map(e=>{
+    const t=techById(e.techId);const isPast=e.date<now,isToday=e.date===now;
+    let tc='—';
+    if(e.tipo==='todos')tc='<span style="color:var(--todos);font-weight:600">👥 Todos</span>';
+    else if(e.tipo==='folga')tc='<span style="color:var(--folga)">⚫ Folga</span>';
+    else if(e.tipo==='feriado')tc='<span style="color:var(--feriado)">🗓️ Feriado</span>';
+    else if(t){const obsHtml=e.obs?('<span style="font-size:10px;color:var(--text3)">'+e.obs+'</span>'):'';tc='<div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:'+t.color+'"></div><span style="color:'+t.color+';font-weight:600">'+t.name+'</span>'+obsHtml+'</div>';}
+    return`<tr><td><span style="font-family:'DM Mono',monospace;font-size:11px">${fmtBR(e.date)}</span></td>
+      <td><span class="tipo-badge ${tipoClass(e.tipo)}">${tipoLabel(e.tipo)}</span></td>
+      <td>${tc}</td>
+      <td>${isPast?'<span class="status-badge s-aprovada">Realizado</span>':isToday?'<span class="status-badge s-pendente">Hoje</span>':'<span class="status-badge s-aprovada">Agendado</span>'}</td>
+      <td><div style="display:flex;gap:5px"><button class="btn btn-secondary btn-sm" onclick="editEscala(${e.id})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteEscala(${e.id})">Remover</button></div></td>
     </tr>`;
   }).join('');
 }
 
-function openAddEscala() {
-  editingEscalaId = null;
-  document.getElementById('modal-escala-title').textContent = 'Nova Escala de Sábado';
-  document.getElementById('esc-date').value = '';
-  document.getElementById('esc-obs').value  = '';
-  const sel = document.getElementById('esc-tech');
-  sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
-    `<option value="${t.id}">${t.name}</option>`).join('');
-  document.getElementById('modal-escala').style.display = 'flex';
+function selectTipoEsc(t,btn){
+  escTipoSel=t;
+  document.querySelectorAll('#esc-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
+  if(btn)btn.classList.add('active-'+t);
+  document.getElementById('esc-tech-section').style.display=t==='normal'?'block':'none';
 }
-
-function editEscala(id) {
-  const e = state.escalas.find(x => x.id === id);
-  if (!e) return;
-  editingEscalaId = id;
-  document.getElementById('modal-escala-title').textContent = 'Editar Escala';
-  document.getElementById('esc-date').value = e.date;
-  document.getElementById('esc-obs').value  = e.obs || '';
-  const sel = document.getElementById('esc-tech');
-  sel.innerHTML = '<option value="">— Selecione —</option>' + state.tecnicos.filter(t => t.active).map(t =>
-    `<option value="${t.id}">${t.name}</option>`).join('');
-  sel.value = e.techId;
-  document.getElementById('modal-escala').style.display = 'flex';
+function openAddEscala(){
+  editingEscalaId=null;escTipoSel='normal';
+  document.getElementById('modal-escala-title').textContent='Nova Escala';
+  document.getElementById('esc-date').value='';document.getElementById('esc-obs').value='';
+  const sel=document.getElementById('esc-tech');
+  sel.innerHTML='<option value="">— Selecione —</option>'+state.tecnicos.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.querySelectorAll('#esc-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
+  document.querySelectorAll('#esc-tipo-selector .tipo-btn')[0].classList.add('active-normal');
+  document.getElementById('esc-tech-section').style.display='block';
+  document.getElementById('modal-escala').style.display='flex';
 }
-
-async function saveEscala() {
-  const date  = document.getElementById('esc-date').value;
-  const techId = document.getElementById('esc-tech').value;
-  const obs   = document.getElementById('esc-obs').value;
-  if (!date)   { showToast('Informe a data', 'error'); return; }
-  if (!techId) { showToast('Selecione um técnico', 'error'); return; }
-  try {
-    if (editingEscalaId) {
-      const e = state.escalas.find(x => x.id === editingEscalaId);
-      await db.from('escalas').update({ date, tech_id: parseInt(techId), obs }).eq('id', editingEscalaId);
-    } else {
-      await dbUpsertEscala(date, parseInt(techId), obs);
+function editEscala(id){
+  const e=state.escalas.find(x=>x.id===id);if(!e)return;
+  editingEscalaId=id;escTipoSel=e.tipo;
+  document.getElementById('modal-escala-title').textContent='Editar Escala';
+  document.getElementById('esc-date').value=e.date;document.getElementById('esc-obs').value=e.obs||'';
+  const sel=document.getElementById('esc-tech');
+  sel.innerHTML='<option value="">— Selecione —</option>'+state.tecnicos.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  sel.value=e.techId||'';
+  const tm={normal:0,folga:1,feriado:2,todos:3};
+  document.querySelectorAll('#esc-tipo-selector .tipo-btn').forEach(b=>b.className='tipo-btn');
+  const btns=document.querySelectorAll('#esc-tipo-selector .tipo-btn');
+  if(btns[tm[e.tipo]])btns[tm[e.tipo]].classList.add('active-'+e.tipo);
+  document.getElementById('esc-tech-section').style.display=e.tipo==='normal'?'block':'none';
+  document.getElementById('modal-escala').style.display='flex';
+}
+async function saveEscala(){
+  const date=document.getElementById('esc-date').value;
+  const techId=document.getElementById('esc-tech').value;
+  const obs=document.getElementById('esc-obs').value;
+  const tipo=escTipoSel;
+  if(!date){showToast('Informe a data','error');return;}
+  if(tipo==='normal'&&!techId){showToast('Selecione um técnico','error');return;}
+  try{
+    let rid;
+    if(editingEscalaId){
+      await db.from('escalas').update({date,tech_id:techId?parseInt(techId):null,tipo,obs}).eq('id',editingEscalaId);
+      rid=editingEscalaId;
+    }else{
+      const r=await dbUpsertEscala(date,techId?parseInt(techId):null,tipo,obs);rid=r?.id;
     }
-    await dbLoad();
-    closeModal('modal-escala');
-    renderEscalas();
-    showToast('Escala salva!', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
+    const t=techId?techById(parseInt(techId)):null;
+    await audit(editingEscalaId?'ESCALA_EDITADA':'ESCALA_CRIADA','escalas',rid,`${fmtBR(date)} → ${tipoLabel(tipo)}${t?' · '+t.name:''}`);
+    await dbLoad();closeModal('modal-escala');renderEscalas();
+    showToast('Escala salva!','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+async function deleteEscala(id){
+  if(!confirm('Remover esta escala?'))return;
+  const e=state.escalas.find(x=>x.id===id);
+  try{
+    await db.from('escalas').delete().eq('id',id);
+    await audit('ESCALA_REMOVIDA','escalas',id,`Sábado ${e?fmtBR(e.date):'?'} removido`);
+    await dbLoad();renderEscalas();showToast('Removida','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-async function deleteEscala(id) {
-  if (!confirm('Remover esta escala?')) return;
-  try {
-    await dbDeleteEscala(id);
-    await dbLoad();
-    renderEscalas();
-    showToast('Escala removida', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
+// DB helper
+async function dbUpsertEscala(date,techId,tipo,obs){
+  const{data:row,error}=await db.from('escalas').upsert({date,tech_id:techId||null,tipo,obs},{onConflict:'date'}).select().single();
+  if(error)throw error;return row;
 }
 
-// ===================== TROCAS =====================
-function renderTrocas() {
-  const cont = document.getElementById('trocas-list');
-  if (state.trocas.length === 0) {
-    cont.innerHTML = `<div class="card"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><p>Nenhuma troca registrada ainda</p></div></div>`;
-    return;
-  }
-  cont.innerHTML = `<div class="card"><div style="display:flex;flex-direction:column;gap:10px">` +
-    state.trocas.map(tr => {
-      const fromEsc  = state.escalas.find(e => e.id === tr.fromEscalaId);
-      const toEsc    = state.escalas.find(e => e.id === tr.toEscalaId);
-      const fromTech = fromEsc ? techById(fromEsc.techId) : null;
-      const toTech   = toEsc   ? techById(toEsc.techId)   : null;
-      const badgeClass = tr.status === 'aprovada' ? 'badge-green' : tr.status === 'recusada' ? 'badge-red' : 'badge-yellow';
-      return `<div class="swap-card">
-        <div class="swap-dates">
-          <div class="swap-date"><div class="swap-date-label">De</div>
-            <div class="swap-date-val">${fromEsc ? fmtBR(fromEsc.date) : '—'}</div>
-            <div style="font-size:11px;color:${fromTech ? fromTech.color : 'var(--text3)'}">${fromTech ? fromTech.name : '—'}</div>
-          </div>
-          <svg class="swap-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
-          <div class="swap-date"><div class="swap-date-label">Para</div>
-            <div class="swap-date-val">${toEsc ? fmtBR(toEsc.date) : '—'}</div>
-            <div style="font-size:11px;color:${toTech ? toTech.color : 'var(--text3)'}">${toTech ? toTech.name : '—'}</div>
-          </div>
+// ═══════════════════════════════════════════════
+// TROCAS
+// ═══════════════════════════════════════════════
+function statusBadge(s){
+  const map={pendente:'s-pendente',aguardando_gestor:'s-ag-gestor',aprovada:'s-aprovada',recusada:'s-recusada'};
+  const lbl={pendente:'Pendente',aguardando_gestor:'Aguard. Gestor',aprovada:'Aprovada',recusada:'Recusada'};
+  return`<span class="status-badge ${map[s]||'s-pendente'}">${lbl[s]||s}</span>`;
+}
+
+function renderTrocas(){
+  const cont=document.getElementById('trocas-list');
+  const isGestor=currentUser?.perfil==='gestor';
+  if(!state.trocas.length){cont.innerHTML=`<div class="card"><div class="empty"><p>Nenhuma troca registrada</p></div></div>`;return;}
+  let html='';
+  state.trocas.forEach(tr=>{
+    const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
+    const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
+    const fromTech=fromEsc?techById(fromEsc.techId):null;
+    const toTech=toEsc?techById(toEsc.techId):null;
+    const sol=userById(tr.solicitanteId);
+    const aprov=userById(tr.aprovadorId);
+    const canRespond=currentUser&&(currentUser.id===tr.aprovadorId||(isGestor&&tr.status==='aguardando_gestor'));
+    html+=`<div class="troca-card">
+      <div class="troca-header">
+        <div class="troca-dates">
+          <div class="troca-date"><div class="troca-date-label">De</div><div class="troca-date-val">${fromEsc?fmtBR(fromEsc.date):'—'}</div><div style="font-size:10px;color:${fromTech?fromTech.color:'var(--text3)'}">${fromTech?fromTech.name:'—'}</div></div>
+          <div class="troca-arrow" style="color:var(--text3);font-size:18px">⇄</div>
+          <div class="troca-date"><div class="troca-date-label">Para</div><div class="troca-date-val">${toEsc?fmtBR(toEsc.date):'—'}</div><div style="font-size:10px;color:${toTech?toTech.color:'var(--text3)'}">${toTech?toTech.name:'—'}</div></div>
         </div>
-        <div style="flex:1;padding:0 12px"><div style="font-size:12px;color:var(--text3)">${tr.motivo || 'Sem motivo'}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <span class="badge ${badgeClass}">${tr.status}</span>
-          <button class="btn btn-danger btn-sm" onclick="deleteTroca(${tr.id})">Remover</button>
-        </div>
-      </div>`;
-    }).join('') + '</div></div>';
-}
-
-function openAddTroca() {
-  const escSorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  const opts = escSorted.map(e => {
-    const t = techById(e.techId);
-    return `<option value="${e.id}">${fmtBR(e.date)} — ${t ? t.name : '?'}</option>`;
-  }).join('');
-  document.getElementById('troca-from').innerHTML   = opts;
-  document.getElementById('troca-to').innerHTML     = opts;
-  document.getElementById('troca-motivo').value     = '';
-  document.getElementById('troca-status').value     = 'pendente';
-  document.getElementById('modal-troca').style.display = 'flex';
-}
-
-async function saveTroca() {
-  const fromId  = parseInt(document.getElementById('troca-from').value);
-  const toId    = parseInt(document.getElementById('troca-to').value);
-  const motivo  = document.getElementById('troca-motivo').value;
-  const status  = document.getElementById('troca-status').value;
-  if (fromId === toId) { showToast('Selecione datas diferentes', 'error'); return; }
-  try {
-    await dbInsertTroca({ fromEscalaId: fromId, toEscalaId: toId, motivo, status });
-    if (status === 'aprovada') {
-      const fromEsc = state.escalas.find(e => e.id === fromId);
-      const toEsc   = state.escalas.find(e => e.id === toId);
-      if (fromEsc && toEsc) {
-        await db.from('escalas').update({ tech_id: toEsc.techId }).eq('id', fromId);
-        await db.from('escalas').update({ tech_id: fromEsc.techId }).eq('id', toId);
-      }
-    }
-    await dbLoad();
-    closeModal('modal-troca');
-    renderTrocas();
-    showToast('Troca registrada!', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
-}
-
-async function deleteTroca(id) {
-  if (!confirm('Remover esta troca?')) return;
-  try {
-    await dbDeleteTroca(id);
-    await dbLoad();
-    renderTrocas();
-    showToast('Troca removida', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
-}
-
-// ===================== TÉCNICOS =====================
-function renderTecnicos() {
-  const list = document.getElementById('tech-list');
-  if (state.tecnicos.length === 0) {
-    list.innerHTML = '<div class="empty"><p>Nenhum técnico cadastrado</p></div>';
-    return;
-  }
-  list.innerHTML = state.tecnicos.map(t => {
-    const count = state.escalas.filter(e => e.techId === t.id).length;
-    return `<div class="tech-row">
-      <div class="tech-color" style="background:${t.color}"></div>
-      <div style="flex:1">
-        <div class="tech-name">${t.name}</div>
-        <div style="font-size:12px;color:var(--text3)">${t.role || 'Técnico'}</div>
+        ${statusBadge(tr.status)}
       </div>
-      <div class="tech-count">${count} sáb.</div>
-      <div class="tech-actions">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${tr.motivo?'💬 '+tr.motivo:'Sem motivo informado'}</div>
+      <div class="troca-footer">
+        <div style="font-size:10px;color:var(--text3);flex:1">
+          ${sol?`Solicitado por <strong style="color:var(--text2)">${sol.name}</strong>`:''}
+          ${aprov?` · Aprovador: <strong style="color:var(--text2)">${aprov.name}</strong>`:''}
+          ${tr.respostaMotivo?` · "${tr.respostaMotivo}"`:''}
+        </div>
+        ${canRespond&&(tr.status==='pendente'||tr.status==='aguardando_gestor')?`<button class="btn btn-primary btn-sm" onclick="openRespostaTroca(${tr.id})">Responder</button>`:''}
+        ${isGestor?`<button class="btn btn-danger btn-sm" onclick="deleteTroca(${tr.id})">Remover</button>`:''}
+      </div>
+    </div>`;
+  });
+  cont.innerHTML=html;
+}
+
+function openAddTroca(){
+  const normal=[...state.escalas].filter(e=>e.tipo==='normal').sort((a,b)=>a.date.localeCompare(b.date));
+  const opts=normal.map(e=>{const t=techById(e.techId);return`<option value="${e.id}">${fmtBR(e.date)} — ${t?t.name:'?'}</option>`;}).join('');
+  document.getElementById('troca-from').innerHTML=opts;
+  document.getElementById('troca-to').innerHTML=opts;
+  document.getElementById('troca-motivo').value='';
+  const aprov=document.getElementById('troca-aprovador');
+  aprov.innerHTML='<option value="">— Selecione —</option>'+state.usuarios.map(u=>`<option value="${u.id}">${u.name} (${u.perfil})</option>`).join('');
+  document.getElementById('modal-troca').style.display='flex';
+}
+async function saveTroca(){
+  const fromId=parseInt(document.getElementById('troca-from').value);
+  const toId=parseInt(document.getElementById('troca-to').value);
+  const motivo=document.getElementById('troca-motivo').value;
+  const aprovId=parseInt(document.getElementById('troca-aprovador').value);
+  if(fromId===toId){showToast('Selecione datas diferentes','error');return;}
+  if(!aprovId){showToast('Selecione quem deve aprovar','error');return;}
+  try{
+    const{data:row,error}=await db.from('trocas').insert({
+      from_escala_id:fromId,to_escala_id:toId,motivo,status:'pendente',
+      solicitante_id:currentUser?.id||null,aprovador_id:aprovId
+    }).select().single();
+    if(error)throw error;
+    // Notificar aprovador
+    const aprov=userById(aprovId);
+    const fromEsc=state.escalas.find(e=>e.id===fromId),toEsc=state.escalas.find(e=>e.id===toId);
+    await createNotif(aprovId,'troca_pendente',`Troca aguardando sua aprovação`,
+      `${currentUser?.name||'Alguém'} solicitou trocar ${fromEsc?fmtBR(fromEsc.date):'?'} por ${toEsc?fmtBR(toEsc.date):'?'}. Motivo: ${motivo||'não informado'}`,row.id);
+    await audit('TROCA_SOLICITADA','trocas',row.id,`Solicitação de troca: ${fromEsc?fmtBR(fromEsc.date):'?'} ↔ ${toEsc?fmtBR(toEsc.date):'?'}`);
+    await dbLoad();closeModal('modal-troca');renderTrocas();
+    showToast('Solicitação enviada! O técnico será notificado.','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+
+function openRespostaTroca(id){
+  respondingTrocaId=id;
+  const tr=state.trocas.find(t=>t.id===id);if(!tr)return;
+  const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
+  const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
+  const fromTech=fromEsc?techById(fromEsc.techId):null,toTech=toEsc?techById(toEsc.techId):null;
+  const sol=userById(tr.solicitanteId);
+  const isGestorAction=tr.status==='aguardando_gestor'&&currentUser?.perfil==='gestor';
+  document.getElementById('modal-resp-title').textContent=isGestorAction?'Decisão do Gestor — Troca Recusada':'Responder Solicitação de Troca';
+  document.getElementById('modal-resp-detail').innerHTML=`
+    <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Solicitação de: ${sol?sol.name:'?'}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="text-align:center"><div style="font-size:10px;color:var(--text3)">De</div><div style="font-size:13px;font-weight:700">${fromEsc?fmtBR(fromEsc.date):'—'}</div><div style="font-size:10px;color:${fromTech?fromTech.color:'var(--text3)'}">${fromTech?fromTech.name:'—'}</div></div>
+      <div style="font-size:20px;color:var(--text3)">⇄</div>
+      <div style="text-align:center"><div style="font-size:10px;color:var(--text3)">Para</div><div style="font-size:13px;font-weight:700">${toEsc?fmtBR(toEsc.date):'—'}</div><div style="font-size:10px;color:${toTech?toTech.color:'var(--text3)'}">${toTech?toTech.name:'—'}</div></div>
+    </div>
+    ${tr.motivo?`<div style="font-size:11px;color:var(--text3)">Motivo: ${tr.motivo}</div>`:''}
+    ${isGestorAction?`<div style="margin-top:8px;font-size:11px;color:var(--feriado)">⚠️ Esta troca foi recusada pelo técnico e está aguardando decisão do gestor.</div>`:''}
+  `;
+  document.getElementById('resp-motivo').value='';
+  document.getElementById('modal-resposta-troca').style.display='flex';
+}
+
+async function responderTroca(decisao){
+  if(!respondingTrocaId)return;
+  const tr=state.trocas.find(t=>t.id===respondingTrocaId);if(!tr)return;
+  const obs=document.getElementById('resp-motivo').value;
+  const isGestorAction=tr.status==='aguardando_gestor'&&currentUser?.perfil==='gestor';
+  let newStatus=decisao;
+  // Se técnico recusa → aguardando_gestor
+  if(decisao==='recusada'&&!isGestorAction) newStatus='aguardando_gestor';
+  try{
+    await db.from('trocas').update({status:newStatus,resposta_motivo:obs,updated_at:new Date().toISOString()}).eq('id',respondingTrocaId);
+    const fromEsc=state.escalas.find(e=>e.id===tr.fromEscalaId);
+    const toEsc=state.escalas.find(e=>e.id===tr.toEscalaId);
+    // Se aprovada → trocar técnicos
+    if(decisao==='aprovada'){
+      if(fromEsc&&toEsc){
+        await db.from('escalas').update({tech_id:toEsc.techId}).eq('id',fromEsc.id);
+        await db.from('escalas').update({tech_id:fromEsc.techId}).eq('id',toEsc.id);
+      }
+      // Notificar solicitante
+      if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_aprovada','Troca aprovada ✅',
+        `${currentUser.name} aprovou sua solicitação de troca.${obs?' Obs: '+obs:''}`,respondingTrocaId);
+      await audit('TROCA_APROVADA','trocas',respondingTrocaId,`Troca aprovada por ${currentUser.name}`);
+    } else if(newStatus==='aguardando_gestor'){
+      // Notificar todos os gestores
+      state.usuarios.filter(u=>u.perfil==='gestor').forEach(async g=>{
+        await createNotif(g.id,'alerta_gestor','⚠️ Troca recusada — necessita decisão',
+          `${currentUser.name} recusou a troca solicitada por ${userById(tr.solicitanteId)?.name||'?'}. Motivo: ${obs||'não informado'}.`,respondingTrocaId);
+      });
+      // Notificar solicitante
+      if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_recusada','Troca recusada ❌',
+        `${currentUser.name} recusou sua solicitação de troca. O gestor foi notificado.`,respondingTrocaId);
+      await audit('TROCA_RECUSADA','trocas',respondingTrocaId,`Recusada por ${currentUser.name} → aguardando gestor`);
+    } else if(decisao==='recusada'&&isGestorAction){
+      if(tr.solicitanteId) await createNotif(tr.solicitanteId,'troca_recusada','Troca recusada definitivamente ❌',
+        `O gestor ${currentUser.name} recusou definitivamente a troca.${obs?' Motivo: '+obs:''}`,respondingTrocaId);
+      await audit('TROCA_RECUSADA_GESTOR','trocas',respondingTrocaId,`Recusada definitivamente pelo gestor ${currentUser.name}`);
+    }
+    await dbLoad();closeModal('modal-resposta-troca');renderTrocas();
+    const msg=decisao==='aprovada'?'Troca aprovada!':newStatus==='aguardando_gestor'?'Recusa registrada. Gestor notificado.':'Troca recusada definitivamente.';
+    showToast(msg,decisao==='aprovada'?'success':'info');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+
+async function deleteTroca(id){
+  if(!confirm('Remover esta troca?'))return;
+  try{
+    await db.from('trocas').delete().eq('id',id);
+    await audit('TROCA_REMOVIDA','trocas',id,'Troca removida');
+    await dbLoad();renderTrocas();showToast('Removida','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+
+// ═══════════════════════════════════════════════
+// NOTIFICAÇÕES
+// ═══════════════════════════════════════════════
+function renderNotificacoes(){
+  if(!currentUser)return;
+  const isGestor=currentUser.perfil==='gestor';
+  // My notifs + gestor pending if gestor
+  let notifs=[...state.notificacoes.filter(n=>n.destinatarioId===currentUser.id)];
+  const cont=document.getElementById('notif-list');
+  if(!notifs.length){
+    cont.innerHTML='<div class="card"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><p>Sem notificações</p></div></div>';return;
+  }
+  const tipoIcons={troca_pendente:'🔔',troca_recusada:'❌',troca_aprovada:'✅',alerta_gestor:'👑'};
+  const tipoCls={troca_pendente:'warn',troca_recusada:'danger',troca_aprovada:'success',alerta_gestor:'gestor'};
+  cont.innerHTML='<div class="card" style="padding:14px">'+notifs.map(function(n){
+    var unreadCls=n.lida?'':'unread';
+    var cursor=n.trocaId?'pointer':'default';
+    var dotCls=n.lida?'read':'';
+    var icon=tipoIcons[n.tipo]||'📌';
+    var dateStr=new Date(n.createdAt).toLocaleString('pt-BR');
+    var verBtn=n.trocaId?('<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();markRead('+n.id+');navigate(\'trocas\')">Ver troca</button>'):'';
+    return '<div class="notif-item '+unreadCls+'" style="cursor:'+cursor+'" onclick="notifItemClick('+n.id+','+(n.trocaId?n.trocaId:'0')+')">'
+      +'<div class="notif-dot '+dotCls+'"></div>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">'+icon+' '+n.titulo+'</div>'
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:4px">'+n.mensagem+'</div>'
+      +'<div style="font-size:10px;color:var(--text3)">'+dateStr+'</div>'
+      +'</div>'+verBtn+'</div>';
+  }).join('')+'</div>';
+}
+function notifItemClick(id, trocaId){
+  markRead(id);
+  if(trocaId && trocaId !== 0) navigate('trocas');
+}
+async function markRead(id){
+  try{await db.from('notificacoes').update({lida:true}).eq('id',id);await dbLoad();renderNotificacoes();}catch(e){}
+}
+async function marcarTodasLidas(){
+  if(!currentUser)return;
+  try{
+    await db.from('notificacoes').update({lida:true}).eq('destinatario_id',currentUser.id);
+    await dbLoad();renderNotificacoes();showToast('Todas marcadas como lidas','success');
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+// TÉCNICOS
+// ═══════════════════════════════════════════════
+function renderTecnicos(){
+  const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
+  document.getElementById('tech-list').innerHTML=ordered.map(t=>{
+    const cnt=state.escalas.filter(e=>e.techId===t.id&&e.tipo==='normal').length;
+    return`<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+      <div style="width:12px;height:12px;border-radius:50%;background:${t.color};flex-shrink:0"></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">${t.name}</div><div style="font-size:11px;color:var(--text3)">${t.role||'Técnico'}</div></div>
+      <span style="font-size:10px;color:var(--accent2);background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);border-radius:4px;padding:2px 7px;font-family:'DM Mono',monospace">#${t.ordemRodizio}</span>
+      <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:2px 7px;background:var(--surface);border-radius:4px">${cnt} sáb.</span>
+      <div style="display:flex;gap:5px">
         <button class="btn btn-secondary btn-sm" onclick="editTecnico(${t.id})">Editar</button>
         <button class="btn btn-danger btn-sm" onclick="deleteTecnico(${t.id})">Remover</button>
       </div>
     </div>`;
-  }).join('');
+  }).join('')||'<div class="empty"><p>Nenhum técnico</p></div>';
+  const prev=document.getElementById('rodizio-queue-preview');
+  prev.innerHTML=ordered.length?('<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">'+ordered.map(function(t,i){return '<span style="display:flex;align-items:center;gap:5px;padding:5px 11px;background:'+t.color+'18;border:1px solid '+t.color+'40;border-radius:20px;font-size:11px;font-weight:700;color:'+t.color+'">'+(i+1)+'. '+t.name+'</span>'+(i<ordered.length-1?'<span style="color:var(--text3)">\u2192</span>':'<span style="color:var(--text3);font-size:10px">\u21a9 repete</span>');}).join('')+'</div>'):'<div style="font-size:12px;color:var(--text3)">Sem t\u00e9cnicos</div>'
 }
 
-function openAddTecnico() {
-  editingTechId = null;
-  document.getElementById('modal-tech-title').textContent = 'Novo Técnico';
-  document.getElementById('tech-name-input').value  = '';
-  document.getElementById('tech-role-input').value  = '';
-  document.getElementById('tech-color-input').value = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
-  document.getElementById('modal-tecnico').style.display = 'flex';
+function openAddTecnico(){
+  editingTechId=null;
+  const mx=Math.max(0,...state.tecnicos.map(t=>t.ordemRodizio));
+  document.getElementById('modal-tech-title').textContent='Novo Técnico';
+  ['tech-name-input','tech-role-input'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tech-ordem-input').value=mx+1;
+  document.getElementById('tech-color-input').value='#'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+  document.getElementById('modal-tecnico').style.display='flex';
 }
-
-function editTecnico(id) {
-  const t = state.tecnicos.find(x => x.id === id);
-  if (!t) return;
-  editingTechId = id;
-  document.getElementById('modal-tech-title').textContent = 'Editar Técnico';
-  document.getElementById('tech-name-input').value  = t.name;
-  document.getElementById('tech-role-input').value  = t.role || '';
-  document.getElementById('tech-color-input').value = t.color;
-  document.getElementById('modal-tecnico').style.display = 'flex';
+function editTecnico(id){
+  const t=state.tecnicos.find(x=>x.id===id);if(!t)return;
+  editingTechId=id;
+  document.getElementById('modal-tech-title').textContent='Editar Técnico';
+  document.getElementById('tech-name-input').value=t.name;
+  document.getElementById('tech-role-input').value=t.role||'';
+  document.getElementById('tech-color-input').value=t.color;
+  document.getElementById('tech-ordem-input').value=t.ordemRodizio||1;
+  document.getElementById('modal-tecnico').style.display='flex';
 }
-
-async function saveTecnico() {
-  const name  = document.getElementById('tech-name-input').value.trim();
-  const role  = document.getElementById('tech-role-input').value.trim();
-  const color = document.getElementById('tech-color-input').value;
-  if (!name) { showToast('Informe o nome', 'error'); return; }
-  try {
-    if (editingTechId) {
-      await dbUpdateTecnico(editingTechId, { name, role, color });
-    } else {
-      await dbInsertTecnico({ name, role, color });
+async function saveTecnico(){
+  const name=document.getElementById('tech-name-input').value.trim();
+  const role=document.getElementById('tech-role-input').value.trim();
+  const color=document.getElementById('tech-color-input').value;
+  const ordem=parseInt(document.getElementById('tech-ordem-input').value)||1;
+  if(!name){showToast('Informe o nome','error');return;}
+  try{
+    if(editingTechId){
+      await db.from('tecnicos').update({name,role,color,ordem_rodizio:ordem}).eq('id',editingTechId);
+      await audit('TECNICO_EDITADO','tecnicos',editingTechId,`Técnico ${name} editado`);
+    }else{
+      const{data:r,error}=await db.from('tecnicos').insert({name,role,color,active:true,ordem_rodizio:ordem}).select().single();
+      if(error)throw error;
+      await audit('TECNICO_CRIADO','tecnicos',r.id,`Técnico ${name} criado`);
     }
-    await dbLoad();
-    closeModal('modal-tecnico');
-    renderTecnicos();
-    showToast('Técnico salvo!', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
+    await dbLoad();closeModal('modal-tecnico');renderTecnicos();showToast('Técnico salvo!','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+async function deleteTecnico(id){
+  if(!confirm('Remover técnico?'))return;
+  const t=state.tecnicos.find(x=>x.id===id);
+  try{
+    await db.from('tecnicos').update({active:false}).eq('id',id);
+    await audit('TECNICO_REMOVIDO','tecnicos',id,`Técnico ${t?.name||'?'} removido`);
+    await dbLoad();renderTecnicos();showToast('Removido','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-async function deleteTecnico(id) {
-  const hasEscalas = state.escalas.some(e => e.techId === id);
-  if (hasEscalas && !confirm('Este técnico tem escalas. Deseja mesmo remover?')) return;
-  try {
-    await dbDeleteTecnico(id);
-    await dbLoad();
-    renderTecnicos();
-    showToast('Técnico removido', 'success');
-  } catch(err) { showToast('Erro: ' + err.message, 'error'); }
-}
-
-// ===================== RELATÓRIOS =====================
-function renderRelatorios() {
-  const yearSel  = document.getElementById('rel-year');
-  const monthSel = document.getElementById('rel-month');
-  const years    = [...new Set(state.escalas.map(e => parseDate(e.date).getFullYear()))];
-  const curYear  = new Date().getFullYear();
-  if (!years.includes(curYear)) years.push(curYear);
-  years.sort((a,b) => b-a);
-  const prevYear = yearSel.value;
-  yearSel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  if (prevYear && years.includes(parseInt(prevYear))) yearSel.value = prevYear;
-
-  const selYear  = parseInt(yearSel.value) || curYear;
-  const selMonth = monthSel.value !== '' ? parseInt(monthSel.value) : null;
-  const filtered = state.escalas.filter(e => {
-    const d = parseDate(e.date);
-    if (d.getFullYear() !== selYear) return false;
-    if (selMonth !== null && d.getMonth() !== selMonth) return false;
-    return true;
-  });
-
-  const counts = {};
-  state.tecnicos.forEach(t => { counts[t.id] = 0; });
-  filtered.forEach(e => { if (counts[e.techId] !== undefined) counts[e.techId]++; else counts[e.techId] = 1; });
-
-  const labels = state.tecnicos.map(t => t.name);
-  const data   = state.tecnicos.map(t => counts[t.id] || 0);
-  const colors = state.tecnicos.map(t => t.color);
-  const total  = data.reduce((a,b) => a+b, 0);
-
-  if (chartBar) chartBar.destroy();
-  chartBar = new Chart(document.getElementById('chart-bar').getContext('2d'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e', stepSize: 1 } },
-        x: { grid: { display: false }, ticks: { color: '#8b949e' } }
-      }
-    }
-  });
-
-  renderPieChart('chart-pie', filtered, 'chartPie');
-
-  document.getElementById('rel-tbody').innerHTML = state.tecnicos.map(t => {
-    const cnt  = counts[t.id] || 0;
-    const pct  = total > 0 ? ((cnt / total) * 100).toFixed(1) : '0.0';
-    const trocas = state.trocas.filter(tr => {
-      const fromEsc = state.escalas.find(e => e.id === tr.fromEscalaId);
-      return fromEsc && fromEsc.techId === t.id;
-    }).length;
-    return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${t.color}"></div>
-        <span style="color:${t.color};font-weight:600">${t.name}</span>
-      </div></td>
-      <td style="font-family:DM Mono,monospace">${cnt}</td>
-      <td style="font-family:DM Mono,monospace">${trocas}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1;height:4px;background:var(--border);border-radius:2px">
-          <div style="width:${pct}%;height:100%;background:${t.color};border-radius:2px"></div>
+// ═══════════════════════════════════════════════
+// AUDITORIA
+// ═══════════════════════════════════════════════
+function renderAuditoria(){
+  const filter=document.getElementById('audit-filter')?.value||'';
+  const items=filter?state.auditLog.filter(a=>a.acao.startsWith(filter)):state.auditLog;
+  const cont=document.getElementById('audit-list');
+  const acaoIcons={ESCALA_CRIADA:'📅',ESCALA_EDITADA:'✏️',ESCALA_REMOVIDA:'🗑️',TROCA_SOLICITADA:'🔄',TROCA_APROVADA:'✅',TROCA_RECUSADA:'❌',TROCA_RECUSADA_GESTOR:'👑',TROCA_REMOVIDA:'🗑️',TECNICO_CRIADO:'👤',TECNICO_EDITADO:'✏️',TECNICO_REMOVIDO:'🗑️',USUARIO_CRIADO:'🔑',USUARIO_EDITADO:'✏️',USUARIO_REMOVIDO:'🗑️'};
+  const acaoCls={ESCALA_CRIADA:'rgba(0,212,170,.1)',ESCALA_EDITADA:'rgba(14,165,233,.1)',ESCALA_REMOVIDA:'rgba(248,81,73,.1)',TROCA_SOLICITADA:'rgba(245,158,11,.1)',TROCA_APROVADA:'rgba(63,185,80,.1)',TROCA_RECUSADA:'rgba(248,81,73,.1)',TROCA_RECUSADA_GESTOR:'rgba(251,191,36,.1)',default:'rgba(139,148,158,.1)'};
+  if(!items.length){cont.innerHTML='<div class="card"><div class="empty"><p>Sem registros</p></div></div>';return;}
+  cont.innerHTML='<div class="card" style="padding:14px">'+items.map(a=>`
+    <div class="audit-item">
+      <div class="audit-icon" style="background:${acaoCls[a.acao]||acaoCls.default}">${acaoIcons[a.acao]||'📝'}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${a.detalhe||a.acao}</div>
+        <div class="audit-meta">
+          <span style="color:var(--text2);font-weight:600">${a.usuarioName}</span> · ${new Date(a.createdAt).toLocaleString('pt-BR')}
+          ${a.registroId?`<span style="color:var(--text3)"> · ID #${a.registroId}</span>`:''}
         </div>
-        <span style="font-family:DM Mono,monospace;font-size:12px">${pct}%</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:2px 7px;background:var(--surface2);border-radius:4px;white-space:nowrap">${a.acao}</span>
+    </div>
+  `).join('')+'</div>';
+}
+
+// ═══════════════════════════════════════════════
+// USUÁRIOS
+// ═══════════════════════════════════════════════
+function renderUsuarios(){
+  const tbody=document.getElementById('usuarios-tbody');
+  tbody.innerHTML=state.usuarios.map(u=>{
+    const t=u.techId?techById(u.techId):null;
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="user-avatar" style="background:${avatarColor(u.name)};width:28px;height:28px;border-radius:7px;font-size:11px">${avatarInitials(u.name)}</div>
+        <span style="font-weight:600;color:var(--text)">${u.name}</span>
+      </div></td>
+      <td>${u.perfil==='gestor'?'<span class="status-badge" style="background:rgba(251,191,36,.15);color:var(--gestor)">👑 Gestor</span>':'<span class="status-badge s-aprovada">👷 Técnico</span>'}</td>
+      <td>${t?`<span style="color:${t.color};font-weight:600">${t.name}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-secondary btn-sm" onclick="editUsuario(${u.id})">Editar</button>
+        ${u.id!==currentUser?.id?`<button class="btn btn-danger btn-sm" onclick="deleteUsuario(${u.id})">Remover</button>`:''}
       </div></td>
     </tr>`;
   }).join('');
 }
 
-function renderPieChart(canvasId, escalas, chartRef) {
-  const counts = {};
-  state.tecnicos.forEach(t => { counts[t.id] = 0; });
-  escalas.forEach(e => { if (counts[e.techId] !== undefined) counts[e.techId]++; });
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  if (window[chartRef]) window[chartRef].destroy();
-  window[chartRef] = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: state.tecnicos.map(t => t.name),
-      datasets: [{ data: state.tecnicos.map(t => counts[t.id] || 0), backgroundColor: state.tecnicos.map(t => t.color), borderWidth: 0 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '65%',
-      plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16, font: { size: 12 } } } }
+let editingUserId2=null;
+function updateUsuarioTechField(){
+  const p=document.getElementById('usuario-perfil-input').value;
+  document.getElementById('usuario-tech-group').style.display=p==='tecnico'?'block':'none';
+}
+function openAddUsuario(){
+  editingUserId2=null;
+  document.getElementById('modal-user-title').textContent='Novo Usuário';
+  document.getElementById('usuario-name-input').value='';
+  document.getElementById('usuario-pin-input').value='';
+  document.getElementById('usuario-perfil-input').value='tecnico';
+  const sel=document.getElementById('usuario-tech-input');
+  sel.innerHTML='<option value="">Nenhum</option>'+state.tecnicos.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('usuario-tech-group').style.display='block';
+  document.getElementById('modal-usuario').style.display='flex';
+}
+function editUsuario(id){
+  const u=state.usuarios.find(x=>x.id===id);if(!u)return;
+  editingUserId2=id;
+  document.getElementById('modal-user-title').textContent='Editar Usuário';
+  document.getElementById('usuario-name-input').value=u.name;
+  document.getElementById('usuario-pin-input').value=u.pin;
+  document.getElementById('usuario-perfil-input').value=u.perfil;
+  const sel=document.getElementById('usuario-tech-input');
+  sel.innerHTML='<option value="">Nenhum</option>'+state.tecnicos.map(t=>`<option value="${t.id}" ${t.id===u.techId?'selected':''}>${t.name}</option>`).join('');
+  document.getElementById('usuario-tech-group').style.display=u.perfil==='tecnico'?'block':'none';
+  document.getElementById('modal-usuario').style.display='flex';
+}
+async function saveUsuario(){
+  const name=document.getElementById('usuario-name-input').value.trim();
+  const pin=document.getElementById('usuario-pin-input').value.trim();
+  const perfil=document.getElementById('usuario-perfil-input').value;
+  const techId=document.getElementById('usuario-tech-input').value;
+  if(!name){showToast('Informe o nome','error');return;}
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){showToast('PIN deve ter exatamente 4 dígitos','error');return;}
+  try{
+    if(editingUserId2){
+      await db.from('usuarios').update({name,pin,perfil,tech_id:techId||null}).eq('id',editingUserId2);
+      await audit('USUARIO_EDITADO','usuarios',editingUserId2,`Usuário ${name} editado`);
+    }else{
+      const{data:r,error}=await db.from('usuarios').insert({name,pin,perfil,tech_id:techId||null,active:true}).select().single();
+      if(error)throw error;
+      await audit('USUARIO_CRIADO','usuarios',r.id,`Usuário ${name} criado (perfil: ${perfil})`);
     }
-  });
+    await dbLoad();closeModal('modal-usuario');renderUsuarios();showToast('Usuário salvo!','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
+}
+async function deleteUsuario(id){
+  if(id===currentUser?.id){showToast('Não é possível remover sua própria conta','error');return;}
+  if(!confirm('Remover usuário?'))return;
+  const u=state.usuarios.find(x=>x.id===id);
+  try{
+    await db.from('usuarios').update({active:false}).eq('id',id);
+    await audit('USUARIO_REMOVIDO','usuarios',id,`Usuário ${u?.name||'?'} removido`);
+    await dbLoad();renderUsuarios();showToast('Removido','success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-// ===================== EXPORT =====================
-function exportExcel() {
-  const sorted   = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  const ws_data  = [['Data', 'Dia da Semana', 'Técnico', 'Função', 'Observações']];
-  sorted.forEach(e => {
-    const t = techById(e.techId);
-    ws_data.push([fmtBR(e.date), parseDate(e.date).toLocaleDateString('pt-BR', { weekday: 'long' }), t ? t.name : '—', t ? (t.role || 'Técnico') : '—', e.obs || '']);
-  });
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  ws['!cols'] = [{ wch: 14 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'Escalas NSI');
-  const ws2_data = [['Nome', 'Função', 'Total Sábados']];
-  state.tecnicos.forEach(t => { ws2_data.push([t.name, t.role || 'Técnico', state.escalas.filter(e => e.techId === t.id).length]); });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws2_data), 'Técnicos');
-  XLSX.writeFile(wb, `Escalas_NSI_${new Date().toISOString().split('T')[0]}.xlsx`);
-  showToast('Excel exportado!', 'success');
+// ═══════════════════════════════════════════════
+// RODÍZIO
+// ═══════════════════════════════════════════════
+function getAllSaturdaysFromNow(limit=52){
+  const sats=[],d=new Date();
+  // find next saturday
+  const dayOfWeek=d.getDay();
+  const daysUntilSat=dayOfWeek===6?0:(6-dayOfWeek);
+  d.setDate(d.getDate()+daysUntilSat);
+  for(let i=0;i<limit*2&&sats.length<limit;i++){sats.push(formatDate(new Date(d)));d.setDate(d.getDate()+7);}
+  return sats;
+}
+let dragSrc=null;
+function openRodizioModal(){
+  const ordered=[...state.tecnicos].sort((a,b)=>a.ordemRodizio-b.ordemRodizio);
+  const ss=document.getElementById('rodizio-start-tech');
+  ss.innerHTML=ordered.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('rodizio-qtd').value=12;
+  const listEl=document.getElementById('rodizio-order-list');
+  listEl.innerHTML=ordered.map(t=>`
+    <div draggable="true" data-id="${t.id}" style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--surface);border:1px solid var(--border);border-radius:7px;cursor:grab;user-select:none"
+      ondragstart="dragSrc=this;this.style.opacity='.4'" ondragend="this.style.opacity='1'"
+      ondragover="event.preventDefault()" ondrop="dropRodizio(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3)"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <div style="width:9px;height:9px;border-radius:50%;background:${t.color}"></div>
+      <span style="font-size:12.5px;font-weight:600;color:var(--text)">${t.name}</span>
+      <span style="font-size:10px;color:var(--text3);margin-left:auto">${t.role||''}</span>
+    </div>
+  `).join('');
+  document.getElementById('modal-rodizio').style.display='flex';
+}
+function dropRodizio(target){
+  if(!dragSrc||dragSrc===target)return;
+  const p=target.parentNode,items=Array.from(p.children);
+  const si=items.indexOf(dragSrc),ti=items.indexOf(target);
+  if(si<ti)p.insertBefore(dragSrc,target.nextSibling);else p.insertBefore(dragSrc,target);
+}
+async function applyRodizio(){
+  const qtd=parseInt(document.getElementById('rodizio-qtd').value)||12;
+  const startId=parseInt(document.getElementById('rodizio-start-tech').value);
+  const items=document.querySelectorAll('#rodizio-order-list [data-id]');
+  const orderedIds=Array.from(items).map(el=>parseInt(el.dataset.id));
+  if(!orderedIds.length){showToast('Sem técnicos','error');return;}
+  try{
+    for(let i=0;i<orderedIds.length;i++) await db.from('tecnicos').update({ordem_rodizio:i+1}).eq('id',orderedIds[i]);
+  }catch(err){showToast('Erro ao salvar ordem: '+err.message,'error');return;}
+  const allSats=getAllSaturdaysFromNow(qtd+10);
+  const toFill=allSats.filter(s=>{const e=escalaByDate(s);return !e||(e.tipo==='normal'&&!e.techId);}).slice(0,qtd);
+  if(!toFill.length){showToast('Todos os sábados já têm técnico!','info');closeModal('modal-rodizio');return;}
+  let startIdx=orderedIds.indexOf(startId);if(startIdx<0)startIdx=0;
+  let filled=0;
+  try{
+    for(let i=0;i<toFill.length;i++){
+      const techId=orderedIds[(startIdx+i)%orderedIds.length];
+      await dbUpsertEscala(toFill[i],techId,'normal','');filled++;
+    }
+    const t=techById(startId);
+    await audit('RODIZIO_APLICADO','escalas',null,`Rodízio gerou ${filled} sábados (início: ${t?.name||'?'})`);
+    await dbLoad();closeModal('modal-rodizio');renderCalendar();renderTecnicos();
+    showToast(`Rodízio: ${filled} sábados gerados!`,'success');
+  }catch(err){showToast('Erro: '+err.message,'error');}
 }
 
-function exportTXT() {
-  const sorted = [...state.escalas].sort((a, b) => a.date.localeCompare(b.date));
-  let txt = '=== ESCALAS DE SÁBADO — NSI UNA ===\n';
-  txt += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-  const byMonth = {};
-  sorted.forEach(e => {
-    const d = parseDate(e.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    if (!byMonth[key]) byMonth[key] = [];
-    byMonth[key].push(e);
-  });
-  Object.entries(byMonth).forEach(([key, escalas]) => {
-    const [y, m] = key.split('-');
-    txt += `\n--- ${new Date(y, parseInt(m)-1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()} ---\n`;
-    escalas.forEach(e => {
-      const t = techById(e.techId);
-      txt += `  ${fmtBR(e.date)}  |  ${(t ? t.name : '—').padEnd(20)}  ${e.obs ? '| ' + e.obs : ''}\n`;
-    });
-  });
-  txt += '\n=== RESUMO POR TÉCNICO ===\n';
-  state.tecnicos.forEach(t => {
-    txt += `  ${t.name.padEnd(20)} ${state.escalas.filter(e => e.techId === t.id).length} sábado(s)\n`;
-  });
-  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Escalas_NSI_${new Date().toISOString().split('T')[0]}.txt`;
-  a.click();
-  showToast('TXT exportado!', 'success');
+// ═══════════════════════════════════════════════
+// RELATÓRIOS
+// ═══════════════════════════════════════════════
+function renderRelatorios(){
+  const ySel=document.getElementById('rel-year'),mSel=document.getElementById('rel-month');
+  const years=[...new Set(state.escalas.map(e=>parseDate(e.date).getFullYear()))];
+  const cy=new Date().getFullYear();if(!years.includes(cy))years.push(cy);years.sort((a,b)=>b-a);
+  const py=ySel.value;ySel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(py&&years.includes(parseInt(py)))ySel.value=py;
+  const sy=parseInt(ySel.value)||cy,sm=mSel.value!==''?parseInt(mSel.value):null;
+  const filtered=state.escalas.filter(e=>{const d=parseDate(e.date);return d.getFullYear()===sy&&(sm===null||d.getMonth()===sm);});
+  const normal=filtered.filter(e=>e.tipo==='normal');
+  const counts={};state.tecnicos.forEach(t=>{counts[t.id]=0;});normal.forEach(e=>{if(counts[e.techId]!==undefined)counts[e.techId]++;});
+  const labels=state.tecnicos.map(t=>t.name),data=state.tecnicos.map(t=>counts[t.id]||0),colors=state.tecnicos.map(t=>t.color);
+  const total=data.reduce((a,b)=>a+b,0);
+  if(chartBar)chartBar.destroy();
+  chartBar=new Chart(document.getElementById('chart-bar').getContext('2d'),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#30363d'},ticks:{color:'#8b949e',stepSize:1}},x:{grid:{display:false},ticks:{color:'#8b949e'}}}}});
+  renderPieChart('chart-pie',normal,'chartPie');
+  document.getElementById('rel-tbody').innerHTML=state.tecnicos.map(t=>{
+    const cnt=counts[t.id]||0,pct=total>0?((cnt/total)*100).toFixed(1):'0.0';
+    const trc=state.trocas.filter(tr=>{const fe=state.escalas.find(e=>e.id===tr.fromEscalaId);return fe&&fe.techId===t.id;}).length;
+    return`<tr><td><div style="display:flex;align-items:center;gap:7px"><div style="width:8px;height:8px;border-radius:50%;background:${t.color}"></div><span style="color:${t.color};font-weight:600">${t.name}</span></div></td>
+      <td style="font-family:'DM Mono',monospace">${cnt}</td>
+      <td style="font-family:'DM Mono',monospace">${trc}</td>
+      <td><div style="display:flex;align-items:center;gap:7px"><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:${pct}%;height:100%;background:${t.color};border-radius:2px"></div></div><span style="font-family:'DM Mono',monospace;font-size:11px">${pct}%</span></div></td>
+    </tr>`;
+  }).join('');
+}
+function renderPieChart(id,escalas,ref){
+  const counts={};state.tecnicos.forEach(t=>{counts[t.id]=0;});escalas.forEach(e=>{if(e.techId&&counts[e.techId]!==undefined)counts[e.techId]++;});
+  const ctx=document.getElementById(id).getContext('2d');
+  if(window[ref])window[ref].destroy();
+  window[ref]=new Chart(ctx,{type:'doughnut',data:{labels:state.tecnicos.map(t=>t.name),datasets:[{data:state.tecnicos.map(t=>counts[t.id]||0),backgroundColor:state.tecnicos.map(t=>t.color),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8b949e',padding:14,font:{size:11}}}}}});
 }
 
-// Click outside modal closes it
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', function(e) {
-    if (e.target === this) this.style.display = 'none';
-  });
-});
-
-// ===================== LIVE CLOCK =====================
-function updateClock() {
-  const now = new Date();
-  const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const dateShort = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
-  const dateFull  = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-
-  const el = document.getElementById('live-clock');
-  const el2 = document.getElementById('live-date');
-  const mClock = document.getElementById('mobile-clock');
-  const mDate  = document.getElementById('mobile-date');
-  const dashSub = document.getElementById('dash-date-sub');
-
-  if (el)     el.textContent     = time;
-  if (el2)    el2.textContent    = dateShort;
-  if (mClock) mClock.textContent = time;
-  if (mDate)  mDate.textContent  = dateShort;
-  if (dashSub) dashSub.textContent = dateFull + ' · ' + time;
+// ═══════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════
+function exportExcel(){
+  const s=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
+  const wd=[['Data','Dia','Tipo','Técnico','Obs']];
+  s.forEach(e=>{const t=techById(e.techId);wd.push([fmtBR(e.date),parseDate(e.date).toLocaleDateString('pt-BR',{weekday:'long'}),tipoLabel(e.tipo),e.tipo==='todos'?'Todos':(t?t.name:'—'),e.obs||'']);});
+  const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(wd);
+  ws['!cols']=[{wch:14},{wch:16},{wch:13},{wch:20},{wch:28}];
+  XLSX.utils.book_append_sheet(wb,ws,'Escalas NSI');
+  XLSX.writeFile(wb,`Escalas_NSI_${formatDate(new Date())}.xlsx`);
+  showToast('Excel exportado!','success');
 }
-updateClock();
-setInterval(updateClock, 1000);
+function exportTXT(){
+  const s=[...state.escalas].sort((a,b)=>a.date.localeCompare(b.date));
+  let txt='=== ESCALAS DE SÁBADO — NSI UNA ===\n';
+  txt+=`Gerado em: ${new Date().toLocaleString('pt-BR')} por ${currentUser?.name||'?'}\n\n`;
+  const byM={};s.forEach(e=>{const d=parseDate(e.date),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!byM[k])byM[k]=[];byM[k].push(e);});
+  Object.entries(byM).forEach(function([k,es]){var parts=k.split('-'),y=parts[0],m=parts[1];txt+='\n--- '+new Date(y,parseInt(m)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).toUpperCase()+' ---\n';es.forEach(function(e){var t=techById(e.techId);var ts=e.tipo!=='normal'?'['+tipoLabel(e.tipo).toUpperCase()+']':'';var techName=(e.tipo==='todos'?'TODOS':(t?t.name:'—'));var pad=function(s,l){s=String(s);while(s.length<l)s+=' ';return s;};txt+='  '+fmtBR(e.date)+'  |  '+pad(techName,20)+' '+pad(ts,12)+' '+(e.obs?'| '+e.obs:'')+' \n';});});
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Escalas_NSI_${formatDate(new Date())}.txt`;a.click();
+  showToast('TXT exportado!','success');
+}
 
-// ===================== INIT =====================
-async function init() {
-  if (!isConfigured) {
-    document.getElementById('setup-screen').style.display = 'flex';
-    return;
-  }
+// ═══════════════════════════════════════════════
+// CLOSE ON OVERLAY CLICK
+// ═══════════════════════════════════════════════
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});});
+
+// ═══════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════
+function updateClock(){
+  const n=new Date();
+  const t=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const ds=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+  ['live-clock','mobile-clock'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t;});
+  const ld=document.getElementById('live-date');if(ld)ld.textContent=ds;
+  const dd=document.getElementById('dash-date-sub');if(dd)dd.textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+' · '+t;
+}
+updateClock();setInterval(updateClock,1000);
+
+// Shake animation
+const style=document.createElement('style');
+style.textContent='@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}';
+document.head.appendChild(style);
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+async function init(){
   await dbLoad();
-  renderDashboard();
+  showLogin();
 }
 init();
 </script>
